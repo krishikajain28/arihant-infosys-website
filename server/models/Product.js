@@ -42,7 +42,7 @@ const productSchema = new mongoose.Schema({
     serialNumber: String, // To track specific units
   },
 
-  // 5. Images (We will store URLs here)
+  // images (we will store urls here)
   images: [{ type: String }],
 
   createdAt: { type: Date, default: Date.now },
