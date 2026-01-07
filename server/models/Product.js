@@ -4,7 +4,6 @@ const productSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
-    trim: true,
   },
   brand: {
     type: String,
@@ -12,7 +11,6 @@ const productSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    enum: ["RAM", "SSD", "HOD", "CPU", "GPU", "Laptop"],
     required: true,
   },
   price: {
@@ -25,25 +23,19 @@ const productSchema = new mongoose.Schema({
   },
   condition: {
     type: String,
-    enum: ["Brand New", "Open Box", "Pulled", "Refurbished"],
     default: "Pulled",
   },
-  // Only for Pulled/Refurb items (e.g., "90% Health")
   health: {
     type: Number,
-    min: 0,
-    max: 100,
-  },
-  specs: {
-    capacity: String, // e.g., "16GB", "512GB"
-    type: String, // e.g., "DDR4", "NVMe"
-    speed: String, // e.g., "3200MHz", "2400T"
-    formFactor: String, // e.g., "2280", "SODIMM"
-    serialNumber: String, // To track specific units
+    required: false,
   },
 
-  // images (we will store urls here)
-  images: [{ type: String }],
+  // THE FIX: We explicitly define the sub-fields here
+  specs: {
+    capacity: { type: String, default: "" },
+    type: { type: String, default: "" },
+    speed: { type: String, default: "" },
+  },
 
   createdAt: { type: Date, default: Date.now },
 });
