@@ -1,16 +1,32 @@
 const router = require("express").Router();
 const Product = require("../models/Product");
+const multer = require("multer");
+const { storage } = require("../config/cloudinary");
 
-// POST: Add a new item to inventory
-router.post("/", async (req, res) => {
+// Initialize Multer with Cloudinary Storage
+const upload = multer({ storage });
+
+// POST: Add a new item with Image Upload
+// Note: 'image' matches the name attribute we will use in the frontend form
+router.post("/", upload.single("image"), async (req, res) => {
   try {
-    console.log("📥 Received Data:", req.body); // LOG 1: What did we receive?
-    const newProduct = new Product(req.body);
+    // 1. Prepare Data
+    // req.body contains the text fields
+    // req.file contains the Cloudinary image data
+
+    const productData = {
+      ...req.body,
+      // If an image was uploaded, save its URL. Else, leave it empty.
+      images: req.file ? [req.file.path] : [],
+    };
+
+    // 2. Create Product
+    const newProduct = new Product(productData);
     const savedProduct = await newProduct.save();
-    console.log("✅ Saved Successfully!");
+
     res.status(201).json(savedProduct);
   } catch (err) {
-    console.error("❌ SAVE FAILED:", err.message); // LOG 2: Why did it fail?
+    console.error("Upload Error:", err);
     res.status(500).json(err);
   }
 });

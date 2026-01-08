@@ -1,33 +1,25 @@
 import React from "react";
-import {
-  FaMemory,
-  FaHdd,
-  FaMicrochip,
-  FaLaptop,
-  FaEdit,
-  FaTrash,
-} from "react-icons/fa";
+import { FaMemory, FaHdd, FaMicrochip, FaLaptop } from "react-icons/fa";
 
 const ProductCard = ({ product }) => {
-  // 1. Icon Logic: Choose icon based on category
+  // 1. Icon Logic (Fallback if no image)
   const getIcon = () => {
     switch (product.category) {
       case "RAM":
-        return <FaMemory className="text-4xl text-purple-500 mb-2" />;
+        return <FaMemory className="text-4xl text-purple-500" />;
       case "SSD":
-        return <FaHdd className="text-4xl text-blue-500 mb-2" />;
+        return <FaHdd className="text-4xl text-blue-500" />;
       case "HDD":
-        return <FaHdd className="text-4xl text-gray-500 mb-2" />;
+        return <FaHdd className="text-4xl text-gray-500" />;
       case "CPU":
-        return <FaMicrochip className="text-4xl text-red-500 mb-2" />;
+        return <FaMicrochip className="text-4xl text-red-500" />;
       case "Laptop":
-        return <FaLaptop className="text-4xl text-white mb-2" />;
+        return <FaLaptop className="text-4xl text-white" />;
       default:
-        return <FaMicrochip className="text-4xl text-green-500 mb-2" />;
+        return <FaMicrochip className="text-4xl text-green-500" />;
     }
   };
 
-  // 2. Status Color Logic
   const getStatusColor = () => {
     if (product.condition === "Brand New")
       return "bg-green-500/20 text-green-400 border-green-500/50";
@@ -37,63 +29,68 @@ const ProductCard = ({ product }) => {
   };
 
   return (
-    <div className="bg-slate-800 rounded-xl p-5 border border-slate-700 shadow-lg hover:shadow-green-500/10 hover:border-green-500/50 transition-all duration-300 group relative overflow-hidden">
-      {/* GLOW EFFECT */}
-      <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-bl-full -mr-10 -mt-10 transition-all group-hover:bg-green-500/20"></div>
+    <div className="bg-slate-800 rounded-xl border border-slate-700 shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-500/50 transition-all duration-300 group relative overflow-hidden flex flex-col h-full">
+      {/* HEADER: Image or Icon */}
+      <div className="h-48 w-full bg-slate-900 border-b border-slate-700 flex items-center justify-center relative overflow-hidden">
+        {/* IF IMAGE EXISTS, SHOW IT. ELSE SHOW ICON */}
+        {product.images && product.images.length > 0 ? (
+          <img
+            src={product.images[0]}
+            alt={product.title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+        ) : (
+          <div className="opacity-50 grayscale group-hover:grayscale-0 transition-all transform scale-150">
+            {getIcon()}
+          </div>
+        )}
 
-      {/* HEADER: Icon & Status */}
-      <div className="flex justify-between items-start mb-4">
-        <div className="p-3 bg-slate-900 rounded-lg border border-slate-700 shadow-inner">
-          {getIcon()}
-        </div>
+        {/* STATUS BADGE */}
         <span
-          className={`text-xs font-bold px-3 py-1 rounded-full border ${getStatusColor()}`}
+          className={`absolute top-3 right-3 text-[10px] font-bold px-2 py-1 rounded-full border backdrop-blur-md ${getStatusColor()}`}
         >
           {product.condition}
         </span>
       </div>
 
       {/* CONTENT */}
-      <div>
-        <h3
-          className="text-lg font-bold text-white truncate"
-          title={product.title}
-        >
-          {product.title}
-        </h3>
-        <p className="text-slate-400 text-sm mt-1 mb-4 font-mono">
-          {product.brand} • {product.specs?.capacity || "N/A"} •{" "}
-          {product.specs?.type || "Standard"}
-        </p>
-      </div>
-
-      {/* FOOTER: Price & Stock */}
-      <div className="flex justify-between items-center border-t border-slate-700 pt-4 mt-2">
+      <div className="p-5 flex-grow flex flex-col justify-between">
         <div>
-          <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
-            Price
-          </p>
-          <p className="text-xl font-bold text-emerald-400">
-            ₹{product.price.toLocaleString()}
+          <h3
+            className="text-lg font-bold text-white truncate"
+            title={product.title}
+          >
+            {product.title}
+          </h3>
+          <p className="text-slate-400 text-xs mt-1 font-mono uppercase tracking-wide">
+            {product.brand} • {product.specs?.capacity || "STD"}
           </p>
         </div>
 
-        <div className="text-right">
-          <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
-            Stock
-          </p>
-          <p
-            className={`text-lg font-bold ${
-              product.stock > 0 ? "text-white" : "text-red-500"
-            }`}
-          >
-            {product.stock}
-          </p>
+        {/* FOOTER: Price & Stock */}
+        <div className="flex justify-between items-end mt-4 pt-4 border-t border-slate-700">
+          <div>
+            <p className="text-[10px] text-slate-500 uppercase font-bold">
+              Price
+            </p>
+            <p className="text-xl font-bold text-emerald-400">
+              ₹{product.price.toLocaleString()}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] text-slate-500 uppercase font-bold">
+              Stock
+            </p>
+            <p
+              className={`text-lg font-bold ${
+                product.stock > 0 ? "text-white" : "text-red-500"
+              }`}
+            >
+              {product.stock}
+            </p>
+          </div>
         </div>
       </div>
-
-      {/* HOVER ACTIONS (Hidden by default, appear on hover) */}
-      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-green-500 to-transparent opacity-0 group-hover:opacity-100 transition-all"></div>
     </div>
   );
 };

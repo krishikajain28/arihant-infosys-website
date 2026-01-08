@@ -27,14 +27,13 @@ const Home = () => {
 
   // 2. ADD TO CART FUNCTION
   const addToCart = (product) => {
-    // Check if item already exists
     const existingItem = cart.find((item) => item._id === product._id);
     if (existingItem) {
       alert("Item already in cart!");
       return;
     }
     setCart([...cart, product]);
-    setIsCartOpen(true); // Auto open cart to show user
+    setIsCartOpen(true);
   };
 
   // 3. REMOVE FROM CART
@@ -42,31 +41,23 @@ const Home = () => {
     setCart(cart.filter((item) => item._id !== id));
   };
 
-  // 4. THE WHATSAPP CHECKOUT LOGIC (THE MONEY MAKER)
-  // 4. THE WHATSAPP CHECKOUT LOGIC (CORRECTED)
+  // 4. WHATSAPP CHECKOUT
   const handleCheckout = () => {
     if (cart.length === 0) return;
-
-    // A. Calculate Total
     const total = cart.reduce((sum, item) => sum + item.price, 0);
-
-    // B. Create the Message
     let message = `*Hello Arihant Infosys, I want to place an order:*\n\n`;
     cart.forEach((item, index) => {
       message += `${index + 1}. ${item.title} - ₹${item.price}\n`;
     });
     message += `\n*Total Amount: ₹${total}*`;
     message += `\n\nPlease confirm availability.`;
-
-    // C. Rahul Bhaiya's Number
     const phoneNumber = "919702730050";
-
     const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
       message
     )}`;
-
     window.open(url, "_blank");
   };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-emerald-500 selection:text-black">
       <Navbar />
@@ -109,12 +100,21 @@ const Home = () => {
                 key={product._id}
                 className="group bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden hover:border-emerald-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/10"
               >
-                {/* Placeholder Image */}
-                <div className="h-56 bg-slate-800/50 flex flex-col items-center justify-center text-slate-600 group-hover:bg-slate-800 transition-colors relative">
-                  <div className="absolute top-4 right-4 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-white border border-slate-800">
+                {/* DYNAMIC IMAGE SECTION - FIXED */}
+                <div className="h-56 bg-slate-800/50 flex flex-col items-center justify-center text-slate-600 group-hover:bg-slate-800 transition-colors relative overflow-hidden">
+                  <div className="absolute top-4 right-4 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-white border border-slate-800 z-10">
                     {product.category}
                   </div>
-                  <span className="text-4xl opacity-20 font-bold">IMG</span>
+
+                  {product.images && product.images.length > 0 ? (
+                    <img
+                      src={product.images[0]}
+                      alt={product.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                  ) : (
+                    <span className="text-4xl opacity-20 font-bold">IMG</span>
+                  )}
                 </div>
 
                 <div className="p-6">
@@ -153,7 +153,6 @@ const Home = () => {
                         ₹{product.price}
                       </div>
                     </div>
-                    {/* BUY BUTTON NOW ADDS TO CART */}
                     <button
                       onClick={() => addToCart(product)}
                       className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 p-3 rounded-xl transition-all transform active:scale-95"
@@ -168,10 +167,9 @@ const Home = () => {
         )}
       </div>
 
-      {/* FLOATING CART (The Sales Engine) */}
+      {/* FLOATING CART */}
       {cart.length > 0 && (
         <div className="fixed bottom-6 right-6 z-50">
-          {/* Cart Toggle Button */}
           {!isCartOpen && (
             <button
               onClick={() => setIsCartOpen(true)}
@@ -182,7 +180,6 @@ const Home = () => {
             </button>
           )}
 
-          {/* Expanded Cart Modal */}
           {isCartOpen && (
             <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-80 overflow-hidden relative animation-fade-in-up">
               <div className="bg-slate-800 p-4 border-b border-slate-700 flex justify-between items-center">
