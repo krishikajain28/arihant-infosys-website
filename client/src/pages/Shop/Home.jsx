@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 import {
   FaStar,
   FaShoppingCart,
   FaCheckCircle,
   FaWhatsapp,
   FaTrash,
+  FaShieldAlt,
+  FaTag,
 } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
@@ -63,22 +66,46 @@ const Home = () => {
       <Navbar />
 
       {/* HERO SECTION */}
-      <div className="relative bg-gradient-to-b from-slate-900 to-slate-950 py-24 px-6 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-emerald-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+      <div className="relative py-32 px-6 overflow-hidden">
+        {/* BACKGROUND IMAGE LAYER (LOCAL FILE) */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/images/home.png"
+            alt="Arihant Infosys Store"
+            className="w-full h-full object-cover opacity-30"
+          />
+          {/* Gradient Overlay to fade image into the dark theme */}
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-900/80 to-slate-950"></div>
+        </div>
+
+        {/* CONTENT LAYER */}
         <div className="relative z-10 max-w-4xl mx-auto text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-medium mb-4">
-            <FaCheckCircle /> Verified Refurbished Hardware
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-sm font-bold mb-4 backdrop-blur-md">
+            <FaTag /> Best Prices in Mumbai
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white">
-            Enterprise Grade. <br />
+
+          {/* SIMPLE, DIRECT HEADLINE */}
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white drop-shadow-2xl leading-tight">
+            Premium Hardware. <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
-              Consumer Price.
+              Wholesale Rates.
             </span>
           </h1>
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Upgrade your rig with premium pulled RAM, SSDs, and CPUs. Tested,
-            wiped, and ready for deployment at 50% of market cost.
+
+          {/* SIMPLE SUBHEADING */}
+          <p className="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
+            Get Original Pulled RAM, SSD, and Laptops directly from corporate
+            offices. <strong>100% Tested. 7 Days Warranty.</strong>
           </p>
+
+          <div className="flex justify-center gap-6 pt-4">
+            <div className="flex items-center gap-2 text-slate-300 text-base font-semibold bg-slate-900/50 px-4 py-2 rounded-lg border border-slate-700">
+              <FaShieldAlt className="text-emerald-500" /> Original Parts
+            </div>
+            <div className="flex items-center gap-2 text-slate-300 text-base font-semibold bg-slate-900/50 px-4 py-2 rounded-lg border border-slate-700">
+              <FaCheckCircle className="text-emerald-500" /> Fully Tested
+            </div>
+          </div>
         </div>
       </div>
 
@@ -86,7 +113,7 @@ const Home = () => {
       <div className="max-w-7xl mx-auto px-6 py-20 pb-40">
         <h2 className="text-3xl font-bold mb-10 flex items-center gap-3">
           <span className="w-2 h-8 bg-emerald-500 rounded-full"></span>
-          Latest Arrivals
+          Latest Stock
         </h2>
 
         {loading ? (
@@ -100,7 +127,7 @@ const Home = () => {
                 key={product._id}
                 className="group bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden hover:border-emerald-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/10"
               >
-                {/* DYNAMIC IMAGE SECTION - FIXED */}
+                {/* DYNAMIC IMAGE SECTION */}
                 <div className="h-56 bg-slate-800/50 flex flex-col items-center justify-center text-slate-600 group-hover:bg-slate-800 transition-colors relative overflow-hidden">
                   <div className="absolute top-4 right-4 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-white border border-slate-800 z-10">
                     {product.category}
@@ -137,9 +164,11 @@ const Home = () => {
                     </div>
                   </div>
 
-                  <h3 className="font-bold text-lg text-white mb-1 truncate group-hover:text-emerald-400 transition-colors">
-                    {product.title}
-                  </h3>
+                  <Link to={`/product/${product._id}`}>
+                    <h3 className="font-bold text-lg text-white mb-1 truncate group-hover:text-emerald-400 transition-colors cursor-pointer hover:underline">
+                      {product.title}
+                    </h3>
+                  </Link>
                   <p className="text-slate-500 text-sm mb-6">
                     {product.brand} • {product.specs?.capacity || "Standard"}
                   </p>
