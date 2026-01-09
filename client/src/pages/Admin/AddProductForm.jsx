@@ -152,9 +152,13 @@ const AddProductForm = ({ onClose, onProductAdded }) => {
               >
                 <option value="RAM">RAM Memory</option>
                 <option value="SSD">SSD Storage</option>
-                <option value="HDD">Hard Drive</option>
+                <option value="HDD">Hard Drive (HDD)</option>
+                <option value="NVMe">NVMe / M.2</option>
                 <option value="CPU">Processor (CPU)</option>
                 <option value="Laptop">Laptop</option>
+                <option value="Desktop">Desktop PC</option>
+                <option value="Server">Server</option>
+                <option value="Workstation">Workstation</option>
               </select>
               <div className="absolute right-3 top-3.5 text-slate-500 pointer-events-none">
                 ▼

@@ -12,6 +12,7 @@ import Home from "./pages/Shop/Home";
 import About from "./pages/Shop/About";
 import Contact from "./pages/Shop/Contact";
 import ProductDetails from "./pages/Shop/ProductDetails";
+import Products from "./pages/Shop/Products";
 
 // components
 import ScrollToTop from "./components/ScrollToTop";
@@ -34,6 +35,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         <Route path="/product/:id" element={<ProductDetails />} />
+        <Route path="/products" element={<Products />} />
         {/* PRIVATE ADMIN ROUTES */}
         <Route
           path="/admin"

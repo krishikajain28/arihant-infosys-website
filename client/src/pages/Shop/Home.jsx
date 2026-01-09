@@ -16,8 +16,6 @@ import Footer from "../../components/Footer";
 const Home = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // 1. THE SHOPPING CART STATE
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
@@ -28,7 +26,6 @@ const Home = () => {
     });
   }, []);
 
-  // 2. ADD TO CART FUNCTION
   const addToCart = (product) => {
     const existingItem = cart.find((item) => item._id === product._id);
     if (existingItem) {
@@ -39,12 +36,10 @@ const Home = () => {
     setIsCartOpen(true);
   };
 
-  // 3. REMOVE FROM CART
   const removeFromCart = (id) => {
     setCart(cart.filter((item) => item._id !== id));
   };
 
-  // 4. WHATSAPP CHECKOUT
   const handleCheckout = () => {
     if (cart.length === 0) return;
     const total = cart.reduce((sum, item) => sum + item.price, 0);
@@ -54,11 +49,10 @@ const Home = () => {
     });
     message += `\n*Total Amount: ₹${total}*`;
     message += `\n\nPlease confirm availability.`;
-    const phoneNumber = "919702730050";
-    const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
-      message
-    )}`;
-    window.open(url, "_blank");
+    window.open(
+      `https://wa.me/919702730050?text=${encodeURIComponent(message)}`,
+      "_blank"
+    );
   };
 
   return (
@@ -67,45 +61,29 @@ const Home = () => {
 
       {/* HERO SECTION */}
       <div className="relative py-32 px-6 overflow-hidden">
-        {/* BACKGROUND IMAGE LAYER (LOCAL FILE) */}
         <div className="absolute inset-0 z-0">
           <img
             src="/images/home.png"
             alt="Arihant Infosys Store"
             className="w-full h-full object-cover opacity-30"
           />
-          {/* Gradient Overlay to fade image into the dark theme */}
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-900/80 to-slate-950"></div>
         </div>
 
-        {/* CONTENT LAYER */}
         <div className="relative z-10 max-w-4xl mx-auto text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-sm font-bold mb-4 backdrop-blur-md">
             <FaTag /> Best Prices in Mumbai
           </div>
-
-          {/* SIMPLE, DIRECT HEADLINE */}
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white drop-shadow-2xl leading-tight">
             Premium Hardware. <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
               Wholesale Rates.
             </span>
           </h1>
-
-          {/* SIMPLE SUBHEADING */}
           <p className="text-xl text-slate-300 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
             Get Original Pulled RAM, SSD, and Laptops directly from corporate
             offices. <strong>100% Tested. 7 Days Warranty.</strong>
           </p>
-
-          <div className="flex justify-center gap-6 pt-4">
-            <div className="flex items-center gap-2 text-slate-300 text-base font-semibold bg-slate-900/50 px-4 py-2 rounded-lg border border-slate-700">
-              <FaShieldAlt className="text-emerald-500" /> Original Parts
-            </div>
-            <div className="flex items-center gap-2 text-slate-300 text-base font-semibold bg-slate-900/50 px-4 py-2 rounded-lg border border-slate-700">
-              <FaCheckCircle className="text-emerald-500" /> Fully Tested
-            </div>
-          </div>
         </div>
       </div>
 
@@ -127,22 +105,24 @@ const Home = () => {
                 key={product._id}
                 className="group bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden hover:border-emerald-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/10"
               >
-                {/* DYNAMIC IMAGE SECTION */}
-                <div className="h-56 bg-slate-800/50 flex flex-col items-center justify-center text-slate-600 group-hover:bg-slate-800 transition-colors relative overflow-hidden">
-                  <div className="absolute top-4 right-4 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-white border border-slate-800 z-10">
-                    {product.category}
-                  </div>
+                {/* 1. MAKE IMAGE CLICKABLE */}
+                <Link to={`/product/${product._id}`}>
+                  <div className="h-56 bg-slate-800/50 flex flex-col items-center justify-center text-slate-600 group-hover:bg-slate-800 transition-colors relative overflow-hidden cursor-pointer">
+                    <div className="absolute top-4 right-4 bg-slate-950/80 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-white border border-slate-800 z-10">
+                      {product.category}
+                    </div>
 
-                  {product.images && product.images.length > 0 ? (
-                    <img
-                      src={product.images[0]}
-                      alt={product.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                  ) : (
-                    <span className="text-4xl opacity-20 font-bold">IMG</span>
-                  )}
-                </div>
+                    {product.images && product.images.length > 0 ? (
+                      <img
+                        src={product.images[0]}
+                        alt={product.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                    ) : (
+                      <span className="text-4xl opacity-20 font-bold">IMG</span>
+                    )}
+                  </div>
+                </Link>
 
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-3">
@@ -164,6 +144,7 @@ const Home = () => {
                     </div>
                   </div>
 
+                  {/* 2. TITLE IS ALSO CLICKABLE */}
                   <Link to={`/product/${product._id}`}>
                     <h3 className="font-bold text-lg text-white mb-1 truncate group-hover:text-emerald-400 transition-colors cursor-pointer hover:underline">
                       {product.title}
@@ -196,7 +177,7 @@ const Home = () => {
         )}
       </div>
 
-      {/* FLOATING CART */}
+      {/* FLOATING CART (Same as before) */}
       {cart.length > 0 && (
         <div className="fixed bottom-6 right-6 z-50">
           {!isCartOpen && (
@@ -208,7 +189,6 @@ const Home = () => {
               <span>{cart.length} Item(s)</span>
             </button>
           )}
-
           {isCartOpen && (
             <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-80 overflow-hidden relative animation-fade-in-up">
               <div className="bg-slate-800 p-4 border-b border-slate-700 flex justify-between items-center">
@@ -222,7 +202,6 @@ const Home = () => {
                   ✕
                 </button>
               </div>
-
               <div className="p-4 max-h-60 overflow-y-auto space-y-3">
                 {cart.map((item) => (
                   <div
@@ -244,7 +223,6 @@ const Home = () => {
                   </div>
                 ))}
               </div>
-
               <div className="bg-slate-800 p-4 border-t border-slate-700">
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-slate-400 text-sm">Total:</span>
@@ -263,7 +241,6 @@ const Home = () => {
           )}
         </div>
       )}
-
       <Footer />
     </div>
   );

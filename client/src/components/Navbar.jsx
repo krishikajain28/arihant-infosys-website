@@ -1,92 +1,108 @@
-import { FaLaptopCode, FaWhatsapp, FaPlus } from "react-icons/fa";
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { FaBars, FaTimes, FaLaptopCode } from "react-icons/fa";
 
-// ACCEPT THE PROP HERE
-const Navbar = ({ onAddClick }) => {
+const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  const isAdmin = location.pathname.includes("/admin");
 
-  // ADMIN NAVBAR
-  if (isAdmin) {
-    return (
-      <nav className="sticky top-0 z-50 bg-slate-900 border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <span className="text-emerald-500 font-bold uppercase tracking-wider flex items-center gap-2">
-              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-              Admin Control Center
-            </span>
+  const isActive = (path) => {
+    return location.pathname === path
+      ? "text-emerald-400 font-bold"
+      : "text-slate-300 hover:text-white";
+  };
 
-            <div className="flex items-center gap-4">
-              {/* THE MISSING BUTTON */}
-              <button
-                onClick={onAddClick}
-                className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2 px-4 rounded-lg text-sm transition-all shadow-lg shadow-emerald-500/20"
-              >
-                <FaPlus /> Add Inventory
-              </button>
-
-              <Link to="/" className="text-slate-400 hover:text-white text-sm">
-                Exit to Website
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
-    );
-  }
-
-  // PUBLIC NAVBAR
   return (
-    <nav className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="fixed w-full z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
+      <div className="max-w-7xl mx-auto px-6">
         <div className="flex justify-between items-center h-20">
-          {/* BRAND */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-              <FaLaptopCode className="text-white text-xl" />
+          {/* LOGO */}
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-2xl font-bold text-white tracking-tight"
+          >
+            <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-slate-950">
+              <FaLaptopCode />
             </div>
-            <div className="flex flex-col">
-              <h1 className="text-xl font-bold tracking-tight text-white leading-none">
-                ARIHANT <span className="text-emerald-400">INFOSYS</span>
-              </h1>
-            </div>
+            ARIHANT <span className="text-emerald-500">INFOSYS</span>
           </Link>
 
-          {/* DESKTOP NAVIGATION */}
+          {/* DESKTOP LINKS */}
           <div className="hidden md:flex items-center gap-8">
-            <Link
-              to="/"
-              className="text-sm font-medium text-slate-300 hover:text-emerald-400 transition-colors"
-            >
+            <Link to="/" className={`${isActive("/")} transition-colors`}>
               Home
             </Link>
             <Link
-              to="/about"
-              className="text-sm font-medium text-slate-300 hover:text-emerald-400 transition-colors"
+              to="/products"
+              className={`${isActive("/products")} transition-colors`}
             >
-              About Us
+              Products
+            </Link>
+            <Link
+              to="/about"
+              className={`${isActive("/about")} transition-colors`}
+            >
+              About
             </Link>
             <Link
               to="/contact"
-              className="text-sm font-medium text-slate-300 hover:text-emerald-400 transition-colors"
+              className={`${isActive("/contact")} transition-colors`}
             >
               Contact
             </Link>
 
-            {/* CTA BUTTON */}
             <a
               href="https://wa.me/919702730050"
               target="_blank"
-              rel="noreferrer"
-              className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 px-6 rounded-lg transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2"
+              className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-5 py-2 rounded-full font-bold transition-all transform hover:scale-105"
             >
-              <FaWhatsapp size={18} />
-              <span>Inquire Now</span>
+              Inquire Now
             </a>
+          </div>
+
+          {/* MOBILE TOGGLE */}
+          <div
+            className="md:hidden text-white text-2xl cursor-pointer"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {isOpen ? <FaTimes /> : <FaBars />}
           </div>
         </div>
       </div>
+
+      {/* MOBILE MENU */}
+      {isOpen && (
+        <div className="md:hidden bg-slate-900 border-t border-slate-800 absolute w-full p-6 flex flex-col gap-4 shadow-2xl">
+          <Link
+            to="/"
+            onClick={() => setIsOpen(false)}
+            className="text-slate-300 hover:text-emerald-400 py-2 border-b border-slate-800"
+          >
+            Home
+          </Link>
+          <Link
+            to="/products"
+            onClick={() => setIsOpen(false)}
+            className="text-slate-300 hover:text-emerald-400 py-2 border-b border-slate-800"
+          >
+            Products
+          </Link>
+          <Link
+            to="/about"
+            onClick={() => setIsOpen(false)}
+            className="text-slate-300 hover:text-emerald-400 py-2 border-b border-slate-800"
+          >
+            About
+          </Link>
+          <Link
+            to="/contact"
+            onClick={() => setIsOpen(false)}
+            className="text-slate-300 hover:text-emerald-400 py-2 border-b border-slate-800"
+          >
+            Contact
+          </Link>
+        </div>
+      )}
     </nav>
   );
 };

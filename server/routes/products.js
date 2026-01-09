@@ -3,41 +3,57 @@ const Product = require("../models/Product");
 const multer = require("multer");
 const { storage } = require("../config/cloudinary");
 
-// Initialize Multer with Cloudinary Storage
+// Initialize Multer
 const upload = multer({ storage });
 
-// POST: Add a new item with Image Upload
-// Note: 'image' matches the name attribute we will use in the frontend form
+// 1. GET PRODUCTS (OPTIMIZED & SANITIZED)
+router.get("/", async (req, res) => {
+  const qCategory = req.query.category;
+  try {
+    let products;
+
+    if (qCategory) {
+      // If category is provided, fetch ONLY that category (Faster)
+      products = await Product.find({
+        category: { $in: [qCategory] },
+      }).sort({ createdAt: -1 });
+    } else {
+      // Fetch all (Reverse order to show newest first)
+      products = await Product.find().sort({ createdAt: -1 });
+    }
+
+    res.status(200).json(products);
+  } catch (err) {
+    console.error("Fetch Error:", err); // Log error in terminal
+    res.status(500).json({ error: "Failed to fetch products" });
+  }
+});
+
+// 2. GET SINGLE PRODUCT (BY ID)
+router.get("/find/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    res.status(200).json(product);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// 3. POST PRODUCT (WITH IMAGE)
 router.post("/", upload.single("image"), async (req, res) => {
   try {
-    // 1. Prepare Data
-    // req.body contains the text fields
-    // req.file contains the Cloudinary image data
-
     const productData = {
       ...req.body,
-      // If an image was uploaded, save its URL. Else, leave it empty.
-      images: req.file ? [req.file.path] : [],
+      images: req.file ? [req.file.path] : [], // Handle image safely
     };
 
-    // 2. Create Product
     const newProduct = new Product(productData);
     const savedProduct = await newProduct.save();
 
     res.status(201).json(savedProduct);
   } catch (err) {
     console.error("Upload Error:", err);
-    res.status(500).json(err);
-  }
-});
-
-// GET: Fetch all inventory
-router.get("/", async (req, res) => {
-  try {
-    const products = await Product.find();
-    res.status(200).json(products);
-  } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({ error: "Product creation failed" });
   }
 });
 
