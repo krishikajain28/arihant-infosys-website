@@ -14,6 +14,12 @@ const Navbar = ({ onAddClick }) => {
   const location = useLocation();
   const isAdmin = location.pathname.includes("/admin");
 
+  // SCROLL HANDLER (Forces Smooth Glide)
+  const handleScrollTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setIsOpen(false);
+  };
+
   // ADMIN NAVBAR
   if (isAdmin) {
     return (
@@ -49,7 +55,11 @@ const Navbar = ({ onAddClick }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* BRAND */}
-          <Link to="/" className="flex items-center gap-3 group">
+          <Link
+            to="/"
+            onClick={handleScrollTop}
+            className="flex items-center gap-3 group"
+          >
             <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
               <FaLaptopCode className="text-white text-xl" />
             </div>
@@ -64,14 +74,15 @@ const Navbar = ({ onAddClick }) => {
           <div className="hidden md:flex items-center gap-8">
             <Link
               to="/"
+              onClick={handleScrollTop}
               className="text-sm font-medium text-slate-300 hover:text-emerald-400 transition-colors"
             >
               Home
             </Link>
 
-            {/* ADDED PRODUCTS LINK */}
             <Link
               to="/products"
+              onClick={handleScrollTop}
               className="text-sm font-medium text-slate-300 hover:text-emerald-400 transition-colors"
             >
               Products
@@ -79,12 +90,14 @@ const Navbar = ({ onAddClick }) => {
 
             <Link
               to="/about"
+              onClick={handleScrollTop}
               className="text-sm font-medium text-slate-300 hover:text-emerald-400 transition-colors"
             >
               About Us
             </Link>
             <Link
               to="/contact"
+              onClick={handleScrollTop}
               className="text-sm font-medium text-slate-300 hover:text-emerald-400 transition-colors"
             >
               Contact
@@ -102,7 +115,7 @@ const Navbar = ({ onAddClick }) => {
             </a>
           </div>
 
-          {/* MOBILE MENU BUTTON (Added back so phone users aren't stuck) */}
+          {/* MOBILE MENU BUTTON */}
           <div
             className="md:hidden text-white text-2xl cursor-pointer"
             onClick={() => setIsOpen(!isOpen)}
@@ -117,28 +130,28 @@ const Navbar = ({ onAddClick }) => {
         <div className="md:hidden bg-slate-900 border-t border-slate-800 absolute w-full flex flex-col shadow-2xl">
           <Link
             to="/"
-            onClick={() => setIsOpen(false)}
+            onClick={handleScrollTop}
             className="text-slate-300 hover:text-emerald-400 py-3 px-6 border-b border-slate-800"
           >
             Home
           </Link>
           <Link
             to="/products"
-            onClick={() => setIsOpen(false)}
+            onClick={handleScrollTop}
             className="text-slate-300 hover:text-emerald-400 py-3 px-6 border-b border-slate-800"
           >
             Products
           </Link>
           <Link
             to="/about"
-            onClick={() => setIsOpen(false)}
+            onClick={handleScrollTop}
             className="text-slate-300 hover:text-emerald-400 py-3 px-6 border-b border-slate-800"
           >
             About Us
           </Link>
           <Link
             to="/contact"
-            onClick={() => setIsOpen(false)}
+            onClick={handleScrollTop}
             className="text-slate-300 hover:text-emerald-400 py-3 px-6 border-b border-slate-800"
           >
             Contact
