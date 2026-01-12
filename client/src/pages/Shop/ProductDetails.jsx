@@ -9,10 +9,11 @@ import {
   FaHdd,
   FaLaptop,
   FaServer,
-  FaDesktop,
+  FaBan, // Added "Ban" icon for Sold Out
 } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import SEO from "../../components/SEO";
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -32,16 +33,11 @@ const ProductDetails = () => {
         setProduct(found);
 
         if (found) {
-          // 1. Filter out the current product
           const others = allProducts.filter((p) => p._id !== found._id);
-
-          // 2. Sort: Same Category first, then the rest
           const sorted = others.sort((a, b) => {
             if (a.category === found.category) return -1;
             return 1;
           });
-
-          // 3. Take top 4
           setRecommendations(sorted.slice(0, 4));
         }
         setLoading(false);
@@ -53,7 +49,6 @@ const ProductDetails = () => {
   }, [id]);
 
   const getIcon = (category) => {
-    // Basic fallback icons
     if (category?.includes("RAM"))
       return <FaMemory className="text-9xl text-slate-700" />;
     if (category?.includes("SSD") || category?.includes("HDD"))
@@ -66,7 +61,7 @@ const ProductDetails = () => {
   };
 
   const handleBuy = () => {
-    if (!product) return;
+    if (!product || product.stock <= 0) return; // Prevent click if no stock
     const message = `*Hi Arihant Infosys, I am interested in this item:*\n\n*${product.title}*\nPrice: ₹${product.price}\nCondition: ${product.condition}\n\nIs it available?`;
     window.open(
       `https://wa.me/919702730050?text=${encodeURIComponent(message)}`,
@@ -87,8 +82,21 @@ const ProductDetails = () => {
       </div>
     );
 
+  // CHECK STOCK STATUS
+  const isOutOfStock = product.stock <= 0;
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
+      {/* DYNAMIC SEO INJECTION */}
+      <SEO
+        title={product.title}
+        description={`Buy ${product.title} for only ₹${product.price}. ${
+          product.specs?.capacity || ""
+        } ${product.specs?.type || ""} available now.`}
+        image={product.images[0]}
+        url={window.location.href}
+      />
+
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-6 py-12">
@@ -99,14 +107,16 @@ const ProductDetails = () => {
           <FaArrowLeft /> Back to Store
         </button>
 
-        {/* MAIN PRODUCT GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20">
+          {/* IMAGE SECTION */}
           <div className="bg-slate-900 rounded-3xl border border-slate-800 p-8 flex items-center justify-center relative overflow-hidden h-[400px] md:h-[500px]">
             {product.images && product.images.length > 0 ? (
               <img
                 src={product.images[0]}
                 alt={product.title}
-                className="w-full h-full object-contain hover:scale-105 transition-transform duration-500"
+                className={`w-full h-full object-contain transition-transform duration-500 ${
+                  isOutOfStock ? "grayscale opacity-50" : "hover:scale-105"
+                }`}
               />
             ) : (
               <div className="flex flex-col items-center gap-4">
@@ -116,13 +126,25 @@ const ProductDetails = () => {
                 </span>
               </div>
             )}
+
+            {/* CONDITION BADGE */}
             <div className="absolute top-6 left-6">
               <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider">
                 {product.condition}
               </span>
             </div>
+
+            {/* SOLD OUT OVERLAY */}
+            {isOutOfStock && (
+              <div className="absolute inset-0 flex items-center justify-center bg-slate-950/40 backdrop-blur-sm">
+                <span className="bg-red-500 text-white px-6 py-3 rounded-xl text-xl font-bold uppercase tracking-widest border-2 border-red-400 shadow-2xl transform -rotate-12">
+                  Sold Out
+                </span>
+              </div>
+            )}
           </div>
 
+          {/* DETAILS SECTION */}
           <div className="flex flex-col justify-center space-y-8">
             <div>
               <h2 className="text-emerald-400 font-bold uppercase tracking-widest text-sm mb-2">
@@ -131,8 +153,15 @@ const ProductDetails = () => {
               <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight mb-4">
                 {product.title}
               </h1>
-              <div className="text-4xl font-mono text-emerald-400 font-bold">
-                ₹{product.price.toLocaleString()}
+              <div className="flex items-center gap-4">
+                <div className="text-4xl font-mono text-emerald-400 font-bold">
+                  ₹{product.price.toLocaleString()}
+                </div>
+                {isOutOfStock && (
+                  <span className="text-red-500 font-bold border border-red-500/30 bg-red-500/10 px-3 py-1 rounded text-sm uppercase">
+                    Currently Unavailable
+                  </span>
+                )}
               </div>
             </div>
 
@@ -163,32 +192,54 @@ const ProductDetails = () => {
                   <span className="text-slate-500 block">Status</span>
                   <span
                     className={`${
-                      product.stock > 0 ? "text-green-400" : "text-red-400"
+                      isOutOfStock ? "text-red-500" : "text-green-400"
                     } font-bold`}
                   >
-                    {product.stock > 0 ? "Available" : "Out of Stock"}
+                    {isOutOfStock
+                      ? "Out of Stock"
+                      : `${product.stock} Units Available`}
                   </span>
                 </div>
               </div>
             </div>
 
+            {/* ACTION BUTTON - DYNAMIC */}
             <button
               onClick={handleBuy}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-4 rounded-xl flex justify-center items-center gap-3 transition-all text-lg shadow-lg shadow-emerald-500/20"
+              disabled={isOutOfStock}
+              className={`w-full font-bold py-4 rounded-xl flex justify-center items-center gap-3 transition-all text-lg shadow-lg ${
+                isOutOfStock
+                  ? "bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700"
+                  : "bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/20"
+              }`}
             >
-              <FaWhatsapp size={24} /> Buy on WhatsApp
+              {isOutOfStock ? (
+                <>
+                  {" "}
+                  <FaBan /> Item Sold Out{" "}
+                </>
+              ) : (
+                <>
+                  {" "}
+                  <FaWhatsapp size={24} /> Buy on WhatsApp{" "}
+                </>
+              )}
             </button>
+
+            <p className="text-slate-500 text-xs text-center">
+              * Actual product may vary slightly from image. 7 Days Replacement
+              Warranty.
+            </p>
           </div>
         </div>
 
-        {/* RECOMMENDATIONS - FORCED TO RENDER */}
-        <div className="border-t border-slate-800 pt-16">
-          <h3 className="text-2xl font-bold text-white mb-8 flex items-center gap-2">
-            <span className="w-2 h-8 bg-emerald-500 rounded-full"></span>
-            You Might Also Like
-          </h3>
-
-          {recommendations.length > 0 ? (
+        {/* RECOMMENDATIONS */}
+        {recommendations.length > 0 && (
+          <div className="border-t border-slate-800 pt-16">
+            <h3 className="text-2xl font-bold text-white mb-8 flex items-center gap-2">
+              <span className="w-2 h-8 bg-emerald-500 rounded-full"></span>
+              You Might Also Like
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {recommendations.map((rec) => (
                 <Link
@@ -216,17 +267,20 @@ const ProductDetails = () => {
                     <h4 className="font-bold text-white truncate group-hover:text-emerald-400 transition-colors">
                       {rec.title}
                     </h4>
-                    <p className="text-emerald-400 font-mono font-bold mt-1">
-                      ₹{rec.price}
-                    </p>
+                    <div className="flex justify-between items-center mt-2">
+                      <p className="text-emerald-400 font-mono font-bold">
+                        ₹{rec.price}
+                      </p>
+                      <span className="text-[10px] text-slate-500 border border-slate-700 px-1 rounded">
+                        {rec.condition}
+                      </span>
+                    </div>
                   </div>
                 </Link>
               ))}
             </div>
-          ) : (
-            <p className="text-slate-500">More stock arriving soon...</p>
-          )}
-        </div>
+          </div>
+        )}
       </div>
       <Footer />
     </div>

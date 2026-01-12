@@ -6,30 +6,25 @@ const { storage } = require("../config/cloudinary");
 // Initialize Multer
 const upload = multer({ storage });
 
-// 1. GET PRODUCTS (OPTIMIZED & SANITIZED)
+// 1. GET PRODUCTS
 router.get("/", async (req, res) => {
   const qCategory = req.query.category;
   try {
     let products;
-
     if (qCategory) {
-      // If category is provided, fetch ONLY that category (Faster)
       products = await Product.find({
         category: { $in: [qCategory] },
       }).sort({ createdAt: -1 });
     } else {
-      // Fetch all (Reverse order to show newest first)
       products = await Product.find().sort({ createdAt: -1 });
     }
-
     res.status(200).json(products);
   } catch (err) {
-    console.error("Fetch Error:", err); // Log error in terminal
     res.status(500).json({ error: "Failed to fetch products" });
   }
 });
 
-// 2. GET SINGLE PRODUCT (BY ID)
+// 2. GET SINGLE PRODUCT
 router.get("/find/:id", async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -39,22 +34,43 @@ router.get("/find/:id", async (req, res) => {
   }
 });
 
-// 3. POST PRODUCT (WITH IMAGE)
-router.post("/", upload.single("image"), async (req, res) => {
-  try {
-    const productData = {
-      ...req.body,
-      images: req.file ? [req.file.path] : [], // Handle image safely
-    };
+// 3. POST PRODUCT (WITH SAFETY NET LOGGING)
+router.post("/", (req, res) => {
+  // We call the uploader manually to catch its errors
+  const uploadSingle = upload.single("image");
 
-    const newProduct = new Product(productData);
-    const savedProduct = await newProduct.save();
+  uploadSingle(req, res, async (err) => {
+    if (err) {
+      // IF UPLOAD FAILS, THIS WILL PRINT THE EXACT REASON
+      console.log("-----------------------------------------");
+      console.error("🔴 UPLOAD ERROR DETECTED:", err);
+      console.log("Check your Cloudinary Keys in .env!");
+      console.log("-----------------------------------------");
+      return res
+        .status(500)
+        .json({ error: "Image Upload Failed", details: err.message });
+    }
 
-    res.status(201).json(savedProduct);
-  } catch (err) {
-    console.error("Upload Error:", err);
-    res.status(500).json({ error: "Product creation failed" });
-  }
+    // IF SUCCESS, SAVE TO DB
+    try {
+      console.log(
+        "🟢 Image Uploaded Successfully:",
+        req.file ? req.file.path : "No File"
+      );
+
+      const productData = {
+        ...req.body,
+        images: req.file ? [req.file.path] : [],
+      };
+
+      const newProduct = new Product(productData);
+      const savedProduct = await newProduct.save();
+      res.status(201).json(savedProduct);
+    } catch (dbErr) {
+      console.error("Database Error:", dbErr);
+      res.status(500).json(dbErr);
+    }
+  });
 });
 
 // 4. DELETE PRODUCT

@@ -30,7 +30,11 @@ const productSchema = new mongoose.Schema({
     required: false,
   },
 
-  // THE FIX: We explicitly define the sub-fields here
+  images: {
+    type: [String],
+    default: [],
+  },
+
   specs: {
     capacity: { type: String, default: "" },
     type: { type: String, default: "" },
