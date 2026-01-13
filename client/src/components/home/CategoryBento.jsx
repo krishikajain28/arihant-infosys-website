@@ -10,12 +10,13 @@ import {
 const CategoryBento = () => {
   return (
     <section className="py-20 px-6 max-w-7xl mx-auto">
+      {/* SECTION HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
         <div>
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
+          <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight">
             Products We <span className="text-emerald-500">Stock.</span>
           </h2>
-          <p className="text-slate-400 max-w-xl text-lg">
+          <p className="text-slate-400 max-w-xl text-lg leading-relaxed">
             We don't sell everything. We only sell what we can verify. Premium
             corporate hardware for professionals.
           </p>
@@ -30,47 +31,63 @@ const CategoryBento = () => {
       </div>
 
       {/* THE BENTO GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[320px]">
         {/* CARD 1: LAPTOPS (Large, Spans 2 Columns) */}
         <Link
-          to="/products"
-          className="group relative md:col-span-2 bg-slate-900 rounded-3xl p-8 border border-slate-800 overflow-hidden hover:border-emerald-500/50 transition-all duration-500"
+          to="/products?category=laptops"
+          className="group relative md:col-span-2 rounded-3xl overflow-hidden border border-white/10 hover:border-emerald-500/50 transition-all duration-500"
         >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 group-hover:bg-emerald-500/20 transition-all duration-500"></div>
-          <div className="relative z-10 h-full flex flex-col justify-between">
-            <div className="bg-slate-950/50 w-fit p-4 rounded-2xl backdrop-blur-md border border-slate-800 text-emerald-400">
-              <FaLaptop size={32} />
+          {/* Background Image Layer with Zoom Effect */}
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+            style={{ backgroundImage: "url('/images/bg/bento1.png')" }}
+          ></div>
+
+          {/* Dark Gradient Overlay (Crucial for Text Readability) */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent opacity-90"></div>
+
+          {/* Content Layer */}
+          <div className="relative z-10 h-full flex flex-col justify-between p-8">
+            <div className="bg-white/5 w-fit p-4 rounded-2xl backdrop-blur-md border border-white/10 text-emerald-400 shadow-lg">
+              <FaLaptop size={28} />
             </div>
             <div>
-              <h3 className="text-3xl font-bold text-white mb-2">
+              <h3 className="text-3xl font-bold text-white mb-2 tracking-wide">
                 Corporate Laptops
               </h3>
-              <p className="text-slate-400 group-hover:text-emerald-200 transition-colors">
+              <p className="text-slate-300 group-hover:text-emerald-200 transition-colors">
                 ThinkPads, Latitudes, and EliteBooks. Sourced directly from
                 MNCs.
               </p>
             </div>
           </div>
-          {/* Decorative Icon Background */}
-          <FaLaptop className="absolute -bottom-12 -right-12 text-[200px] text-slate-800/20 group-hover:text-emerald-500/5 group-hover:scale-110 transition-all duration-700 rotate-12" />
         </Link>
 
         {/* CARD 2: RAM (Tall or Square) */}
         <Link
-          to="/products"
-          className="group relative bg-slate-900 rounded-3xl p-8 border border-slate-800 overflow-hidden hover:border-purple-500/50 transition-all duration-500"
+          to="/products?category=ram"
+          className="group relative rounded-3xl overflow-hidden border border-white/10 hover:border-purple-500/50 transition-all duration-500"
         >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 group-hover:bg-purple-500/20 transition-all duration-500"></div>
-          <div className="relative z-10 h-full flex flex-col justify-between">
-            <div className="bg-slate-950/50 w-fit p-4 rounded-2xl backdrop-blur-md border border-slate-800 text-purple-400">
-              <FaMemory size={32} />
+          {/* Background Image */}
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+            style={{ backgroundImage: "url('/images/bg/bento2.png')" }}
+          ></div>
+
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent opacity-90"></div>
+
+          {/* Content */}
+          <div className="relative z-10 h-full flex flex-col justify-between p-8">
+            <div className="bg-white/5 w-fit p-4 rounded-2xl backdrop-blur-md border border-white/10 text-purple-400 shadow-lg">
+              <FaMemory size={28} />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-white mb-2">
+              <h3 className="text-2xl font-bold text-white mb-2 tracking-wide">
                 High Speed RAM
               </h3>
-              <p className="text-slate-400">
-                DDR3 & DDR4 Desktop/Laptop Memory.
+              <p className="text-slate-300 text-sm">
+                DDR4 & DDR5 Desktop/Laptop Memory.
               </p>
             </div>
           </div>
@@ -78,17 +95,30 @@ const CategoryBento = () => {
 
         {/* CARD 3: STORAGE (Square) */}
         <Link
-          to="/products"
-          className="group relative bg-slate-900 rounded-3xl p-8 border border-slate-800 overflow-hidden hover:border-blue-500/50 transition-all duration-500"
+          to="/products?category=storage"
+          className="group relative rounded-3xl overflow-hidden border border-white/10 hover:border-blue-500/50 transition-all duration-500"
         >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 group-hover:bg-blue-500/20 transition-all duration-500"></div>
-          <div className="relative z-10 h-full flex flex-col justify-between">
-            <div className="bg-slate-950/50 w-fit p-4 rounded-2xl backdrop-blur-md border border-slate-800 text-blue-400">
-              <FaHdd size={32} />
+          {/* Background Image */}
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+            style={{ backgroundImage: "url('/images/bg/bento3.png')" }}
+          ></div>
+
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent opacity-90"></div>
+
+          {/* Content */}
+          <div className="relative z-10 h-full flex flex-col justify-between p-8">
+            <div className="bg-white/5 w-fit p-4 rounded-2xl backdrop-blur-md border border-white/10 text-blue-400 shadow-lg">
+              <FaHdd size={28} />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-white mb-2">SSD & HDD</h3>
-              <p className="text-slate-400">100% Health. Zero Bad Sectors.</p>
+              <h3 className="text-2xl font-bold text-white mb-2 tracking-wide">
+                SSD & HDD
+              </h3>
+              <p className="text-slate-300 text-sm">
+                100% Health. Zero Bad Sectors.
+              </p>
             </div>
           </div>
         </Link>
@@ -96,28 +126,38 @@ const CategoryBento = () => {
         {/* CARD 4: SERVERS/BULK (Wide, Spans 2 Cols) */}
         <Link
           to="/contact"
-          className="group relative md:col-span-2 bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl p-8 border border-slate-800 overflow-hidden hover:border-emerald-500/50 transition-all duration-500"
+          className="group relative md:col-span-2 rounded-3xl overflow-hidden border border-white/10 hover:border-emerald-500/50 transition-all duration-500"
         >
-          {/* Different styling for the last card */}
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
-          <div className="relative z-10 flex items-center justify-between h-full">
-            <div>
+          {/* Background Image */}
+          <div
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+            style={{ backgroundImage: "url('/images/bg/bento4.png')" }}
+          ></div>
+
+          {/* Gradient Overlay - Darker here for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent opacity-95"></div>
+
+          {/* Content */}
+          <div className="relative z-10 flex items-center justify-between h-full p-8">
+            <div className="max-w-lg">
               <div className="flex items-center gap-3 mb-4">
-                <FaServer className="text-emerald-500 text-3xl" />
-                <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                <FaServer className="text-emerald-500 text-2xl" />
+                <span className="bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-emerald-500/20">
                   For Offices
                 </span>
               </div>
-              <h3 className="text-3xl font-bold text-white mb-2">
+              <h3 className="text-3xl font-bold text-white mb-3 tracking-wide">
                 Setting up a Lab or Office?
               </h3>
-              <p className="text-slate-400 max-w-md">
+              <p className="text-slate-300 text-lg">
                 Get Bulk Pricing for quantities 10+. We provide GST Invoices for
                 businesses.
               </p>
             </div>
-            <div className="hidden md:flex h-16 w-16 bg-emerald-500 rounded-full items-center justify-center text-slate-900 group-hover:scale-110 transition-transform">
-              <FaArrowRight size={24} />
+
+            {/* Call to Action Button */}
+            <div className="hidden md:flex h-14 w-14 bg-white/10 rounded-full items-center justify-center text-white backdrop-blur-md border border-white/20 group-hover:scale-110 group-hover:bg-emerald-500 group-hover:text-slate-900 group-hover:border-emerald-500 transition-all duration-300">
+              <FaArrowRight size={20} />
             </div>
           </div>
         </Link>
