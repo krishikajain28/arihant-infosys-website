@@ -11,6 +11,7 @@ import ProductCard from "../../components/ProductCard";
 import AdminStats from "./AdminStats";
 import AddProductForm from "./AddProductForm";
 import EditProductForm from "./EditProductForm"; // 🟢 ADDED THIS IMPORT
+import { API_URL } from "../../config";
 
 const Dashboard = () => {
   const [products, setProducts] = useState([]);
@@ -27,7 +28,7 @@ const Dashboard = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/products");
+      const response = await axios.get(`${API_URL}/products`);
       const reversedData = response.data.reverse();
       setProducts(reversedData);
       setFilteredProducts(reversedData);

@@ -7,6 +7,7 @@ import {
   FaSpinner,
   FaSave,
 } from "react-icons/fa";
+import { API_URL } from "../../config";
 
 const EditProductForm = ({ product, onClose, onProductUpdated }) => {
   const [loading, setLoading] = useState(false);
@@ -59,13 +60,9 @@ const EditProductForm = ({ product, onClose, onProductUpdated }) => {
 
     try {
       // PUT request to update
-      await axios.put(
-        `http://localhost:5000/api/products/${product._id}`,
-        data,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      await axios.put(`${API_URL}/products/${product._id}`, data, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       setLoading(false);
       setSuccess(true);
       setTimeout(() => {

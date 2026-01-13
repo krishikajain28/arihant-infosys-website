@@ -15,6 +15,7 @@ import {
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import ProductCard from "../../components/ProductCard";
+import { API_URL } from "../../config";
 
 // ----------------------------------------------------------------------
 // HELPER: IMAGE URL FIXER (Kept this as it stops broken images)
@@ -81,7 +82,7 @@ const Products = () => {
     const fetchInventory = async () => {
       try {
         setLoading(true);
-        const res = await axios.get("http://localhost:5000/api/products");
+        const res = await axios.get(`${API_URL}/products`);
         setProducts(res.data.reverse());
         setLoading(false);
       } catch (err) {

@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { FaArrowRight } from "react-icons/fa";
 import ProductCard from "../../components/ProductCard";
+import { API_URL } from "../../config";
 
 const LatestArrivals = () => {
   const [products, setProducts] = useState([]);
@@ -10,7 +11,7 @@ const LatestArrivals = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/products")
+      .get(`${API_URL}/products`)
       .then((res) => {
         // Get newest 8 items
         setProducts(res.data.reverse().slice(0, 8));

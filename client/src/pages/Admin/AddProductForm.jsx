@@ -6,6 +6,7 @@ import {
   FaCheckCircle,
   FaSpinner,
 } from "react-icons/fa";
+import { API_URL } from "../../config";
 
 const AddProductForm = ({ onClose, onProductAdded }) => {
   const [loading, setLoading] = useState(false);
@@ -57,7 +58,7 @@ const AddProductForm = ({ onClose, onProductAdded }) => {
     }
 
     try {
-      await axios.post("http://localhost:5000/api/products", data, {
+      await axios.post(`${API_URL}/products`, data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setLoading(false);

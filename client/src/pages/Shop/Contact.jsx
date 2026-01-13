@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import { API_URL } from "../../config"; // 🟢 1. ADD THIS IMPORT
 import {
   FaMapMarkerAlt,
   FaWhatsapp,
@@ -24,7 +25,7 @@ const Contact = () => {
     message: "",
   });
 
-  const [status, setStatus] = useState(null); // 'success' or 'error'
+  const [status, setStatus] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -33,10 +34,9 @@ const Contact = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Sending data to your backend
-      await axios.post("http://localhost:5000/api/inquiries", formData);
+      // 🟢 2. USE THE VARIABLE HERE
+      await axios.post(`${API_URL}/inquiries`, formData);
 
-      // If successful:
       setStatus("success");
       setFormData({
         name: "",
@@ -46,7 +46,6 @@ const Contact = () => {
         message: "",
       });
 
-      // Clear success message after 5 seconds
       setTimeout(() => setStatus(null), 5000);
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -65,7 +64,7 @@ const Contact = () => {
           <img
             src="/images/bg/contact.png"
             alt="Contact Support"
-            className="w-full h-full object-cover object-center "
+            className="w-full h-full object-cover object-center opacity-30 grayscale"
           />
           {/* Solid Dark Overlay */}
           <div className="absolute inset-0 bg-slate-950/80"></div>

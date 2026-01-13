@@ -19,6 +19,7 @@ import {
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import SEO from "../../components/SEO";
+import { API_URL } from "../../config";
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -31,7 +32,7 @@ const ProductDetails = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
 
     axios
-      .get(`http://localhost:5000/api/products`)
+      .get(`${API_URL}/products`)
       .then((res) => {
         const allProducts = res.data;
         const found = allProducts.find((p) => p._id === id);
