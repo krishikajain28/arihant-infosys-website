@@ -1,24 +1,66 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
+import { useSearchParams } from "react-router-dom";
 import {
   FaSearch,
   FaFilter,
   FaSortAmountDown,
   FaBoxOpen,
+  FaExclamationCircle,
+  FaTimes,
+  FaChevronRight,
+  FaCheckCircle,
+  FaBuilding,
 } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import ProductCard from "../../components/ProductCard"; // REUSING THE CARD
+import ProductCard from "../../components/ProductCard";
+
+// ----------------------------------------------------------------------
+// HELPER: IMAGE URL FIXER (Kept this as it stops broken images)
+// ----------------------------------------------------------------------
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return "https://via.placeholder.com/300?text=No+Image";
+  if (imagePath.startsWith("http")) return imagePath;
+  return `http://localhost:5000${imagePath}`;
+};
+
+// ----------------------------------------------------------------------
+// SUB-COMPONENTS
+// ----------------------------------------------------------------------
+
+// FILTER TAG (Clean, Business Style)
+const FilterTag = ({ label, onRemove }) => (
+  <button
+    onClick={onRemove}
+    className="flex items-center gap-2 bg-white text-slate-900 border border-slate-300 px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wide hover:bg-slate-100 transition-colors shadow-sm"
+  >
+    {label}
+    <FaTimes className="text-slate-500 hover:text-red-600" />
+  </button>
+);
+
+// ----------------------------------------------------------------------
+// MAIN PAGE
+// ----------------------------------------------------------------------
 
 const Products = () => {
+  // --- STATE ---
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // FILTERS
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortOrder, setSortOrder] = useState("newest"); // newest, low-high, high-low
+  // UI Controls
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9; // 9 fits perfectly in a 3x3 grid
+
+  // URL Management
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeCategory = searchParams.get("category") || "All";
+  const sortOrder = searchParams.get("sort") || "newest";
+  const searchTermURL = searchParams.get("search") || "";
+  const [localSearch, setLocalSearch] = useState(searchTermURL);
 
   const categories = [
     "All",
@@ -33,29 +75,49 @@ const Products = () => {
     "Workstation",
   ];
 
+  // --- DATA FETCHING ---
   useEffect(() => {
     window.scrollTo(0, 0);
-    axios.get("http://localhost:5000/api/products").then((res) => {
-      // Default: Newest first
-      const data = res.data.reverse();
-      setProducts(data);
-      setFilteredProducts(data);
-      setLoading(false);
-    });
+    const fetchInventory = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.get("http://localhost:5000/api/products");
+        setProducts(res.data.reverse());
+        setLoading(false);
+      } catch (err) {
+        console.error("Inventory Fetch Error:", err);
+        setError("Unable to load current stock. Please refresh.");
+        setLoading(false);
+      }
+    };
+    fetchInventory();
   }, []);
 
-  // MASTER FILTER LOGIC
+  // --- SEARCH DEBOUNCE ---
   useEffect(() => {
-    let result = [...products]; // Create a copy
+    const handler = setTimeout(() => {
+      if (localSearch !== searchTermURL) {
+        setSearchParams((prev) => {
+          const newParams = new URLSearchParams(prev);
+          if (localSearch) newParams.set("search", localSearch);
+          else newParams.delete("search");
+          newParams.delete("page");
+          return newParams;
+        });
+        setCurrentPage(1);
+      }
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [localSearch, searchTermURL, setSearchParams]);
 
-    // 1. Category Filter
+  // --- FILTERING ENGINE ---
+  const filteredProducts = useMemo(() => {
+    let result = [...products];
     if (activeCategory !== "All") {
       result = result.filter((p) => p.category === activeCategory);
     }
-
-    // 2. Search Filter
-    if (searchTerm) {
-      const lower = searchTerm.toLowerCase();
+    if (searchTermURL) {
+      const lower = searchTermURL.toLowerCase();
       result = result.filter(
         (p) =>
           p.title.toLowerCase().includes(lower) ||
@@ -63,143 +125,340 @@ const Products = () => {
           p.category.toLowerCase().includes(lower)
       );
     }
+    if (sortOrder === "low-high") result.sort((a, b) => a.price - b.price);
+    else if (sortOrder === "high-low") result.sort((a, b) => b.price - a.price);
+    return result;
+  }, [products, activeCategory, searchTermURL, sortOrder]);
 
-    // 3. Sorting Logic
-    if (sortOrder === "low-high") {
-      result.sort((a, b) => a.price - b.price);
-    } else if (sortOrder === "high-low") {
-      result.sort((a, b) => b.price - a.price);
-    } else {
-      // Default is newest (based on how we fetched, or DB ID)
-      // Since we reversed initially, we can leave it or re-sort by date if we had a date field
+  // --- PAGINATION ---
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const currentProducts = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredProducts.slice(start, start + itemsPerPage);
+  }, [currentPage, filteredProducts]);
+
+  // --- HANDLERS ---
+  const updateFilter = (key, value) => {
+    setSearchParams((prev) => {
+      const newParams = new URLSearchParams(prev);
+      if (value === "All" && key === "category") newParams.delete("category");
+      else newParams.set(key, value);
+      return newParams;
+    });
+    setCurrentPage(1);
+    setIsMobileFilterOpen(false);
+  };
+
+  const clearFilters = () => {
+    setSearchParams({});
+    setLocalSearch("");
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      window.scrollTo({ top: 300, behavior: "smooth" });
     }
+  };
 
-    setFilteredProducts(result);
-  }, [activeCategory, searchTerm, sortOrder, products]);
-
+  // ----------------------------------------------------------------------
+  // VIEW RENDER
+  // ----------------------------------------------------------------------
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-sans selection:bg-emerald-500 selection:text-black">
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans flex flex-col">
       <Navbar />
 
-      {/* 1. COMPACT HERO BANNER */}
-      <div className="bg-gradient-to-b from-slate-900 to-slate-950 pt-28 pb-10 px-6 border-b border-slate-800 relative overflow-hidden">
-        {/* Background Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-full bg-emerald-500/5 blur-3xl pointer-events-none"></div>
+      {/* 1. HERO SECTION */}
+      <div className="relative bg-slate-900 border-b border-slate-800">
+        {/* Background Image Layer */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/images/bg/inventory.png"
+            alt="Inventory Background"
+            className="w-full h-full object-cover opacity-40"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/10 to-transparent"></div>{" "}
+        </div>
 
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-end gap-6 relative z-10">
-          <div>
-            <h1 className="text-4xl font-bold text-white mb-2">Inventory.</h1>
-            <p className="text-slate-400">
-              Verified corporate pulls. 100% Tested.
-            </p>
-          </div>
+        <div className="max-w-7xl mx-auto px-6 py-20 relative z-10">
+          <div className="flex flex-col md:flex-row justify-between items-end gap-8">
+            <div>
+              <div className="flex items-center gap-2 text-emerald-500 font-bold text-xs uppercase tracking-widest mb-3">
+                <FaBuilding /> Corporate Hardware Solutions
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">
+                Wholesale Inventory
+              </h1>
+              <p className="text-slate-300 text-lg max-w-2xl font-medium">
+                Verified pulls from corporate environments. Fully tested. <br />
+                <span className="text-slate-400 text-sm mt-3 block">
+                  <FaCheckCircle className="inline mr-1 text-emerald-500" /> GST
+                  Invoice Available
+                  <span className="mx-2">•</span>
+                  <FaCheckCircle className="inline mr-1 text-emerald-500" />{" "}
+                  Pan-India Shipping
+                </span>
+              </p>
+            </div>
 
-          {/* SEARCH BAR (Floating) */}
-          <div className="relative w-full md:w-96 group">
-            <div className="absolute inset-0 bg-emerald-500/20 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            <div className="relative">
-              <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
-              <input
-                type="text"
-                placeholder="Search '8GB RAM', 'Dell'..."
-                className="w-full bg-slate-900 border border-slate-700 rounded-full py-3 pl-12 pr-6 text-white focus:border-emerald-500 outline-none transition-all shadow-xl"
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            {/* SEARCH INPUT */}
+            <div className="w-full md:w-[450px]">
+              <div className="relative group">
+                <input
+                  type="text"
+                  placeholder="Search Part No, Brand, Model..."
+                  value={localSearch}
+                  onChange={(e) => setLocalSearch(e.target.value)}
+                  className="w-full bg-white text-slate-900 rounded-md py-4 pl-12 pr-12 font-medium shadow-xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all placeholder:text-slate-400"
+                />
+                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg" />
+                {localSearch && (
+                  <button
+                    onClick={() => setLocalSearch("")}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500"
+                  >
+                    <FaTimes />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col lg:flex-row gap-10">
-        {/* 2. SIDEBAR (Sticky on Desktop) */}
-        <aside className="lg:w-64 flex-shrink-0">
-          <div className="sticky top-24 space-y-8">
-            {/* Sort Dropdown (Mobile + Desktop) */}
-            <div className="bg-slate-900 p-4 rounded-xl border border-slate-800">
-              <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">
-                <FaSortAmountDown /> Sort By
-              </div>
-              <select
-                className="w-full bg-slate-950 text-white p-2 rounded-lg border border-slate-700 outline-none focus:border-emerald-500"
-                onChange={(e) => setSortOrder(e.target.value)}
-              >
-                <option value="newest">Newest Arrivals</option>
-                <option value="low-high">Price: Low to High</option>
-                <option value="high-low">Price: High to Low</option>
-              </select>
-            </div>
+      <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col lg:flex-row gap-8 w-full relative">
+        {/* MOBILE FILTER BUTTON */}
+        <div className="lg:hidden mb-4">
+          <button
+            onClick={() => setIsMobileFilterOpen(true)}
+            className="w-full flex justify-center items-center gap-2 bg-slate-800 text-white px-4 py-3 rounded-md font-bold text-sm border border-slate-700"
+          >
+            <FaFilter /> Filter Stock
+          </button>
+        </div>
 
-            {/* Categories */}
+        {/* 2. SIDEBAR FILTER */}
+        <aside
+          className={`
+          fixed inset-0 z-50 bg-slate-900 p-6 transition-transform duration-300 lg:translate-x-0 lg:static lg:bg-transparent lg:p-0 lg:z-auto lg:w-64 flex-shrink-0 border-r border-slate-800 lg:border-none
+          ${isMobileFilterOpen ? "translate-x-0" : "-translate-x-full"}
+        `}
+        >
+          <div className="flex justify-between items-center lg:hidden mb-8">
+            <h2 className="text-xl font-bold text-white">Filter Stock</h2>
+            <button onClick={() => setIsMobileFilterOpen(false)}>
+              <FaTimes size={24} />
+            </button>
+          </div>
+
+          <div className="sticky top-24 space-y-8">
+            {/* Category List */}
             <div>
-              <div className="flex items-center gap-2 text-emerald-400 font-bold mb-4 uppercase tracking-wider text-xs">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                 <FaFilter /> Categories
-              </div>
-              {/* Horizontal Scroll on Mobile, Vertical List on Desktop */}
-              <div className="flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0 no-scrollbar">
+              </h3>
+              <div className="space-y-1">
                 {categories.map((cat) => (
                   <button
                     key={cat}
-                    onClick={() => setActiveCategory(cat)}
-                    className={`text-left px-4 py-2.5 rounded-lg transition-all font-medium whitespace-nowrap text-sm border ${
+                    onClick={() => updateFilter("category", cat)}
+                    className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-all flex justify-between items-center group ${
                       activeCategory === cat
-                        ? "bg-emerald-500 text-slate-950 border-emerald-500 font-bold shadow-lg shadow-emerald-500/20"
-                        : "bg-transparent text-slate-400 border-transparent hover:bg-slate-900 hover:text-white"
+                        ? "bg-emerald-600 text-white shadow-md"
+                        : "text-slate-400 hover:bg-slate-800 hover:text-white"
                     }`}
                   >
                     {cat}
+                    {activeCategory === cat && (
+                      <FaChevronRight className="text-xs" />
+                    )}
                   </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Sort Options */}
+            <div>
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <FaSortAmountDown /> Sort Order
+              </h3>
+              <div className="bg-slate-900 border border-slate-800 rounded-lg p-4 space-y-3">
+                {[
+                  { label: "New Arrivals", val: "newest" },
+                  { label: "Price: Low to High", val: "low-high" },
+                  { label: "Price: High to Low", val: "high-low" },
+                ].map((opt) => (
+                  <label
+                    key={opt.val}
+                    className="flex items-center gap-3 cursor-pointer group"
+                  >
+                    <div
+                      className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                        sortOrder === opt.val
+                          ? "border-emerald-500"
+                          : "border-slate-600"
+                      }`}
+                    >
+                      {sortOrder === opt.val && (
+                        <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                      )}
+                    </div>
+                    <input
+                      type="radio"
+                      name="sort"
+                      className="hidden"
+                      checked={sortOrder === opt.val}
+                      onChange={() => updateFilter("sort", opt.val)}
+                    />
+                    <span
+                      className={
+                        sortOrder === opt.val
+                          ? "text-white text-sm"
+                          : "text-slate-400 text-sm group-hover:text-slate-200"
+                      }
+                    >
+                      {opt.label}
+                    </span>
+                  </label>
                 ))}
               </div>
             </div>
           </div>
         </aside>
 
-        {/* 3. PRODUCT GRID */}
-        <main className="flex-1">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-slate-400 text-sm">
-              Showing <strong>{filteredProducts.length}</strong> results
-            </span>
+        {/* 3. INVENTORY GRID */}
+        <main className="flex-1 min-h-[600px]">
+          {/* Top Bar (Desktop) */}
+          <div className="hidden lg:flex justify-between items-center mb-6 pb-4 border-b border-slate-800">
+            <div className="flex items-center gap-3">
+              <span className="text-slate-400 text-sm font-medium">
+                Showing{" "}
+                <strong className="text-white">{currentProducts.length}</strong>{" "}
+                of{" "}
+                <strong className="text-white">
+                  {filteredProducts.length}
+                </strong>{" "}
+                items
+              </span>
+
+              {/* Active Filters */}
+              {(activeCategory !== "All" || searchTermURL) && (
+                <div className="flex gap-2 ml-4 pl-4 border-l border-slate-800">
+                  {activeCategory !== "All" && (
+                    <FilterTag
+                      label={activeCategory}
+                      onRemove={() => updateFilter("category", "All")}
+                    />
+                  )}
+                  {searchTermURL && (
+                    <FilterTag
+                      label={`"${searchTermURL}"`}
+                      onRemove={() => {
+                        setLocalSearch("");
+                        setSearchParams((p) => {
+                          p.delete("search");
+                          return p;
+                        });
+                      }}
+                    />
+                  )}
+                  <button
+                    onClick={clearFilters}
+                    className="text-xs text-slate-500 hover:text-white underline ml-2"
+                  >
+                    Clear All
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
+          {/* STATES */}
+          {error && (
+            <div className="bg-red-900/20 border border-red-500/50 text-red-200 p-6 rounded-lg flex items-center gap-4 mb-6">
+              <FaExclamationCircle className="text-2xl text-red-500" />
+              <div>
+                <h3 className="font-bold">System Error</h3>
+                <p className="text-sm">{error}</p>
+              </div>
+            </div>
+          )}
+
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <div
                   key={n}
-                  className="bg-slate-900 h-80 rounded-2xl border border-slate-800"
+                  className="bg-slate-900 h-80 rounded-lg border border-slate-800 animate-pulse"
                 ></div>
               ))}
             </div>
           ) : filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProducts.map((product) => (
-                // REUSING YOUR PRODUCT CARD (No Admin Controls Here)
-                <ProductCard
-                  key={product._id}
-                  product={product}
-                  isAdmin={false}
-                />
-              ))}
-            </div>
+            <>
+              {/* GRID CONTENT AREA */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {currentProducts.map((product) => (
+                  <ProductCard
+                    key={product._id}
+                    product={product}
+                    isAdmin={false}
+                  />
+                ))}
+              </div>
+
+              {/* PAGINATION */}
+              {totalPages > 1 && (
+                <div className="mt-12 py-6 border-t border-slate-800 flex justify-center items-center gap-2">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="p-2 px-4 rounded-md bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 disabled:opacity-50 transition-all text-sm font-bold"
+                  >
+                    Prev
+                  </button>
+
+                  <div className="flex gap-1">
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handlePageChange(i + 1)}
+                        className={`w-9 h-9 rounded-md text-sm font-bold border transition-all ${
+                          currentPage === i + 1
+                            ? "bg-emerald-600 text-white border-emerald-600"
+                            : "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-600"
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="p-2 px-4 rounded-md bg-slate-900 border border-slate-800 text-slate-400 hover:bg-slate-800 disabled:opacity-50 transition-all text-sm font-bold"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             // EMPTY STATE
-            <div className="text-center py-32 bg-slate-900/30 rounded-3xl border border-slate-800 border-dashed">
-              <FaBoxOpen className="text-6xl text-slate-700 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-white">
-                No products found
+            <div className="text-center py-24 bg-slate-900 border border-slate-800 border-dashed rounded-lg flex flex-col items-center">
+              <FaBoxOpen className="text-6xl text-slate-700 mb-4" />
+              <h3 className="text-xl font-bold text-white mb-2">
+                Item Not Found
               </h3>
-              <p className="text-slate-500 mt-2">
-                Try adjusting your filters or search.
+              <p className="text-slate-500 max-w-sm mx-auto mb-6">
+                We don't have stock matching "{searchTermURL}" right now.
               </p>
               <button
-                onClick={() => {
-                  setActiveCategory("All");
-                  setSearchTerm("");
-                }}
-                className="mt-6 text-emerald-400 font-bold hover:underline"
+                onClick={clearFilters}
+                className="bg-white text-slate-900 font-bold py-2 px-6 rounded-md hover:bg-slate-200 transition-colors"
               >
-                Clear all filters
+                Reset Search
               </button>
             </div>
           )}

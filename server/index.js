@@ -19,8 +19,12 @@ mongoose
     console.log(`caught error : `, err);
   });
 
+// --- ROUTES ---
 const productRoute = require("./routes/products");
+const inquiryRoute = require("./routes/inquiries"); // 🟢 NEW: Import Inquiry Route
+
 app.use("/api/products", productRoute);
+app.use("/api/inquiries", inquiryRoute); // 🟢 NEW: Use Inquiry Route
 
 app.get("/", (req, res) => {
   res.send("arihant infosys server running");
