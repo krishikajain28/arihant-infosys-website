@@ -34,24 +34,20 @@ router.get("/find/:id", async (req, res) => {
   }
 });
 
-// 3. POST PRODUCT (WITH SAFETY NET LOGGING)
+// 3. POST PRODUCT (UPDATED FOR NEW SCHEMA)
 router.post("/", (req, res) => {
-  // We call the uploader manually to catch its errors
   const uploadSingle = upload.single("image");
 
   uploadSingle(req, res, async (err) => {
     if (err) {
-      // IF UPLOAD FAILS, THIS WILL PRINT THE EXACT REASON
       console.log("-----------------------------------------");
       console.error("🔴 UPLOAD ERROR DETECTED:", err);
-      console.log("Check your Cloudinary Keys in .env!");
       console.log("-----------------------------------------");
       return res
         .status(500)
         .json({ error: "Image Upload Failed", details: err.message });
     }
 
-    // IF SUCCESS, SAVE TO DB
     try {
       console.log(
         "🟢 Image Uploaded Successfully:",
@@ -59,7 +55,26 @@ router.post("/", (req, res) => {
       );
 
       const productData = {
-        ...req.body,
+        // BASIC INFO
+        title: req.body.title,
+        brand: req.body.brand,
+        category: req.body.category,
+        price: req.body.price,
+        mrp: req.body.mrp, // 🟢 Added MRP
+        stock: req.body.stock,
+        condition: req.body.condition,
+        isFeatured: req.body.isFeatured === "true", // Convert string "true" to Boolean
+
+        // ENHANCED SPECS
+        specs: {
+          capacity: req.body.capacity,
+          type: req.body.type,
+          speed: req.body.speed,
+          health: req.body.health,
+          formFactor: req.body.formFactor, // 🟢 Added Form Factor (M.2/SATA)
+          interface: req.body.interface, // 🟢 Added Interface (NVMe/Gen3)
+        },
+
         images: req.file ? [req.file.path] : [],
       };
 
@@ -81,6 +96,59 @@ router.delete("/:id", async (req, res) => {
   } catch (err) {
     res.status(500).json(err);
   }
+});
+
+// 5. UPDATE PRODUCT
+router.put("/:id", (req, res) => {
+  const uploadSingle = upload.single("image");
+
+  uploadSingle(req, res, async (err) => {
+    if (err)
+      return res
+        .status(500)
+        .json({ error: "Upload Failed", details: err.message });
+
+    try {
+      // 1. Find the existing product to keep old image if needed
+      const existingProduct = await Product.findById(req.params.id);
+      if (!existingProduct) return res.status(404).json("Product not found");
+
+      // 2. Prepare the update data
+      const updateData = {
+        title: req.body.title,
+        brand: req.body.brand,
+        category: req.body.category,
+        price: req.body.price,
+        mrp: req.body.mrp,
+        stock: req.body.stock,
+        condition: req.body.condition,
+        isFeatured: req.body.isFeatured === "true",
+
+        specs: {
+          capacity: req.body.capacity,
+          type: req.body.type,
+          speed: req.body.speed,
+          health: req.body.health,
+          formFactor: req.body.formFactor,
+          interface: req.body.interface,
+        },
+
+        // If new file exists, use it. Otherwise, keep existing images.
+        images: req.file ? [req.file.path] : existingProduct.images,
+      };
+
+      // 3. Update in Database
+      const updatedProduct = await Product.findByIdAndUpdate(
+        req.params.id,
+        { $set: updateData },
+        { new: true }
+      );
+
+      res.status(200).json(updatedProduct);
+    } catch (dbErr) {
+      res.status(500).json(dbErr);
+    }
+  });
 });
 
 module.exports = router;

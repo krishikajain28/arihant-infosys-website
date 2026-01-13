@@ -9,7 +9,12 @@ import {
   FaHdd,
   FaLaptop,
   FaServer,
-  FaBan, // Added "Ban" icon for Sold Out
+  FaBan,
+  FaCheckCircle,
+  FaBolt,
+  FaShippingFast,
+  FaShieldAlt,
+  FaTag,
 } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
@@ -50,18 +55,16 @@ const ProductDetails = () => {
 
   const getIcon = (category) => {
     if (category?.includes("RAM"))
-      return <FaMemory className="text-9xl text-slate-700" />;
+      return <FaMemory className="text-6xl text-slate-300" />;
     if (category?.includes("SSD") || category?.includes("HDD"))
-      return <FaHdd className="text-9xl text-slate-700" />;
+      return <FaHdd className="text-6xl text-slate-300" />;
     if (category?.includes("Laptop"))
-      return <FaLaptop className="text-9xl text-slate-700" />;
-    if (category?.includes("Server"))
-      return <FaServer className="text-9xl text-slate-700" />;
-    return <FaMicrochip className="text-9xl text-slate-700" />;
+      return <FaLaptop className="text-6xl text-slate-300" />;
+    return <FaMicrochip className="text-6xl text-slate-300" />;
   };
 
   const handleBuy = () => {
-    if (!product || product.stock <= 0) return; // Prevent click if no stock
+    if (!product || product.stock <= 0) return;
     const message = `*Hi Arihant Infosys, I am interested in this item:*\n\n*${product.title}*\nPrice: ₹${product.price}\nCondition: ${product.condition}\n\nIs it available?`;
     window.open(
       `https://wa.me/919702730050?text=${encodeURIComponent(message)}`,
@@ -71,8 +74,8 @@ const ProductDetails = () => {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-        Loading Specs...
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-emerald-500">
+        <FaMicrochip className="animate-spin text-4xl" />
       </div>
     );
   if (!product)
@@ -82,154 +85,232 @@ const ProductDetails = () => {
       </div>
     );
 
-  // CHECK STOCK STATUS
   const isOutOfStock = product.stock <= 0;
 
+  // CALCULATE DISCOUNT
+  const discount =
+    product.mrp > product.price
+      ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
+      : 0;
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans">
-      {/* DYNAMIC SEO INJECTION */}
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500 selection:text-white">
       <SEO
         title={product.title}
-        description={`Buy ${product.title} for only ₹${product.price}. ${
-          product.specs?.capacity || ""
-        } ${product.specs?.type || ""} available now.`}
+        description={`Buy ${product.title}. ${product.specs?.capacity || ""} ${
+          product.specs?.type || ""
+        } available now at Arihant Infosys.`}
         image={product.images[0]}
         url={window.location.href}
       />
-
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* NAV BACK */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-slate-400 hover:text-white mb-8 transition-colors"
+          className="flex items-center gap-2 text-slate-400 hover:text-white mb-8 transition-colors group"
         >
-          <FaArrowLeft /> Back to Store
+          <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" />{" "}
+          Back to Store
         </button>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20">
-          {/* IMAGE SECTION */}
-          <div className="bg-slate-900 rounded-3xl border border-slate-800 p-8 flex items-center justify-center relative overflow-hidden h-[400px] md:h-[500px]">
-            {product.images && product.images.length > 0 ? (
-              <img
-                src={product.images[0]}
-                alt={product.title}
-                className={`w-full h-full object-contain transition-transform duration-500 ${
-                  isOutOfStock ? "grayscale opacity-50" : "hover:scale-105"
-                }`}
-              />
-            ) : (
-              <div className="flex flex-col items-center gap-4">
-                {getIcon(product.category)}
-                <span className="text-slate-600 font-bold text-2xl uppercase tracking-widest">
-                  No Image
-                </span>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
+          {/* --- LEFT: IMAGE SECTION (WHITE BG FIX) --- */}
+          <div className="relative">
+            <div className="bg-white rounded-3xl p-8 flex items-center justify-center relative overflow-hidden h-[400px] md:h-[500px] shadow-2xl group border-4 border-slate-900">
+              {/* Status Badges */}
+              <div className="absolute top-6 left-6 z-10 flex flex-col gap-2">
+                {product.condition && (
+                  <span className="bg-slate-900 text-white px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider shadow-lg">
+                    {product.condition}
+                  </span>
+                )}
+                {product.specs?.health && (
+                  <span className="bg-emerald-600 text-white px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider shadow-lg flex items-center gap-1">
+                    <FaBolt /> {product.specs.health}% Health
+                  </span>
+                )}
               </div>
-            )}
 
-            {/* CONDITION BADGE */}
-            <div className="absolute top-6 left-6">
-              <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider">
-                {product.condition}
-              </span>
+              {/* Discount Badge */}
+              {discount > 0 && !isOutOfStock && (
+                <div className="absolute top-6 right-6 z-10 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-xl animate-pulse">
+                  {discount}% OFF
+                </div>
+              )}
+
+              {/* Main Image */}
+              {product.images && product.images.length > 0 ? (
+                <img
+                  src={product.images[0]}
+                  alt={product.title}
+                  className={`w-full h-full object-contain mix-blend-multiply transition-transform duration-700 ${
+                    isOutOfStock
+                      ? "grayscale opacity-50"
+                      : "group-hover:scale-110"
+                  }`}
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-4 text-slate-300">
+                  {getIcon(product.category)}
+                  <span className="font-bold text-2xl uppercase tracking-widest text-slate-400">
+                    No Image
+                  </span>
+                </div>
+              )}
+
+              {/* Sold Out Overlay */}
+              {isOutOfStock && (
+                <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[2px]">
+                  <span className="bg-red-600 text-white px-8 py-4 rounded-xl text-2xl font-bold uppercase tracking-widest shadow-2xl transform -rotate-12 border-4 border-white">
+                    Sold Out
+                  </span>
+                </div>
+              )}
             </div>
 
-            {/* SOLD OUT OVERLAY */}
-            {isOutOfStock && (
-              <div className="absolute inset-0 flex items-center justify-center bg-slate-950/40 backdrop-blur-sm">
-                <span className="bg-red-500 text-white px-6 py-3 rounded-xl text-xl font-bold uppercase tracking-widest border-2 border-red-400 shadow-2xl transform -rotate-12">
-                  Sold Out
-                </span>
-              </div>
-            )}
+            {/* Thumbnail / Extra Info (Optional) */}
+            <div className="mt-4 flex gap-4 justify-center text-xs text-slate-500">
+              <span className="flex items-center gap-1">
+                <FaCheckCircle className="text-emerald-500" /> Quality Checked
+              </span>
+              <span className="flex items-center gap-1">
+                <FaShieldAlt className="text-emerald-500" /> 7-Day Warranty
+              </span>
+              <span className="flex items-center gap-1">
+                <FaShippingFast className="text-emerald-500" /> Fast Delivery
+              </span>
+            </div>
           </div>
 
-          {/* DETAILS SECTION */}
-          <div className="flex flex-col justify-center space-y-8">
-            <div>
-              <h2 className="text-emerald-400 font-bold uppercase tracking-widest text-sm mb-2">
+          {/* --- RIGHT: DETAILS SECTION --- */}
+          <div className="flex flex-col justify-center">
+            {/* Title Block */}
+            <div className="mb-6">
+              <h2 className="text-emerald-400 font-bold uppercase tracking-widest text-xs mb-2 flex items-center gap-2">
+                <span className="w-8 h-[2px] bg-emerald-500"></span>
                 {product.brand} / {product.category}
               </h2>
               <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight mb-4">
                 {product.title}
               </h1>
-              <div className="flex items-center gap-4">
-                <div className="text-4xl font-mono text-emerald-400 font-bold">
+
+              {/* Pricing Block */}
+              <div className="flex items-end gap-4 border-b border-slate-800 pb-6">
+                <div className="text-5xl font-mono text-white font-bold tracking-tighter">
                   ₹{product.price.toLocaleString()}
                 </div>
-                {isOutOfStock && (
-                  <span className="text-red-500 font-bold border border-red-500/30 bg-red-500/10 px-3 py-1 rounded text-sm uppercase">
-                    Currently Unavailable
-                  </span>
+                {product.mrp > product.price && (
+                  <div className="flex flex-col mb-1">
+                    <span className="text-slate-500 text-lg line-through decoration-red-500/50 decoration-2">
+                      ₹{product.mrp.toLocaleString()}
+                    </span>
+                    <span className="text-emerald-400 text-xs font-bold uppercase">
+                      Save ₹{(product.mrp - product.price).toLocaleString()}
+                    </span>
+                  </div>
                 )}
               </div>
             </div>
 
-            <div className="bg-slate-900/50 rounded-2xl p-6 border border-slate-800">
-              <h3 className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-4 border-b border-slate-800 pb-2">
-                Technical Specifications
+            {/* Technical Specs Grid */}
+            <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 mb-8 shadow-inner">
+              <h3 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+                <FaMicrochip /> Technical Specifications
               </h3>
-              <div className="grid grid-cols-2 gap-y-4 text-sm">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4 text-sm">
+                {/* Standard Specs */}
                 <div>
-                  <span className="text-slate-500 block">Capacity</span>
-                  <span className="text-white font-mono">
-                    {product.specs?.capacity || "N/A"}
+                  <span className="text-slate-500 text-xs uppercase block mb-1">
+                    Capacity
+                  </span>
+                  <span className="text-white font-bold">
+                    {product.specs?.capacity || "--"}
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block">Type</span>
-                  <span className="text-white font-mono">
-                    {product.specs?.type || "N/A"}
+                  <span className="text-slate-500 text-xs uppercase block mb-1">
+                    Type
+                  </span>
+                  <span className="text-white font-bold">
+                    {product.specs?.type || "--"}
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block">Speed</span>
-                  <span className="text-white font-mono">
-                    {product.specs?.speed || "N/A"}
+                  <span className="text-slate-500 text-xs uppercase block mb-1">
+                    Speed
+                  </span>
+                  <span className="text-white font-bold">
+                    {product.specs?.speed || "--"}
+                  </span>
+                </div>
+
+                {/* 🟢 NEW SPECS */}
+                <div>
+                  <span className="text-slate-500 text-xs uppercase block mb-1">
+                    Interface
+                  </span>
+                  <span className="text-white font-bold">
+                    {product.specs?.interface || "--"}
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block">Status</span>
+                  <span className="text-slate-500 text-xs uppercase block mb-1">
+                    Form Factor
+                  </span>
+                  <span className="text-white font-bold">
+                    {product.specs?.formFactor || "--"}
+                  </span>
+                </div>
+
+                {/* Health Highlight */}
+                <div className="relative">
+                  <span className="text-slate-500 text-xs uppercase block mb-1">
+                    Health Status
+                  </span>
                   <span
-                    className={`${
-                      isOutOfStock ? "text-red-500" : "text-green-400"
-                    } font-bold`}
+                    className={`font-bold ${
+                      product.specs?.health && product.specs.health > 90
+                        ? "text-emerald-400"
+                        : "text-white"
+                    }`}
                   >
-                    {isOutOfStock
-                      ? "Out of Stock"
-                      : `${product.stock} Units Available`}
+                    {product.specs?.health
+                      ? `${product.specs.health}%`
+                      : "Standard"}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* ACTION BUTTON - DYNAMIC */}
-            <button
-              onClick={handleBuy}
-              disabled={isOutOfStock}
-              className={`w-full font-bold py-4 rounded-xl flex justify-center items-center gap-3 transition-all text-lg shadow-lg ${
-                isOutOfStock
-                  ? "bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700"
-                  : "bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/20"
-              }`}
-            >
-              {isOutOfStock ? (
-                <>
-                  {" "}
-                  <FaBan /> Item Sold Out{" "}
-                </>
-              ) : (
-                <>
-                  {" "}
-                  <FaWhatsapp size={24} /> Buy on WhatsApp{" "}
-                </>
-              )}
-            </button>
+            {/* Call to Action */}
+            <div className="space-y-4">
+              <button
+                onClick={handleBuy}
+                disabled={isOutOfStock}
+                className={`w-full font-bold py-5 rounded-2xl flex justify-center items-center gap-3 transition-all text-xl shadow-2xl hover:-translate-y-1 ${
+                  isOutOfStock
+                    ? "bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700"
+                    : "bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/20"
+                }`}
+              >
+                {isOutOfStock ? (
+                  <>
+                    <FaBan /> Item Sold Out
+                  </>
+                ) : (
+                  <>
+                    <FaWhatsapp size={28} /> Buy on WhatsApp
+                  </>
+                )}
+              </button>
 
-            <p className="text-slate-500 text-xs text-center">
-              * Actual product may vary slightly from image. 7 Days Replacement
-              Warranty.
-            </p>
+              <div className="flex items-center justify-center gap-2 text-slate-500 text-xs bg-slate-900/50 py-2 rounded-lg">
+                <FaTag className="text-slate-600" />
+                Lowest Price Guaranteed • Verified Corporate Pull
+              </div>
+            </div>
           </div>
         </div>
 
@@ -237,43 +318,44 @@ const ProductDetails = () => {
         {recommendations.length > 0 && (
           <div className="border-t border-slate-800 pt-16">
             <h3 className="text-2xl font-bold text-white mb-8 flex items-center gap-2">
-              <span className="w-2 h-8 bg-emerald-500 rounded-full"></span>
-              You Might Also Like
+              <span className="w-1 h-8 bg-emerald-500 rounded-full"></span>
+              Similar Items
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {recommendations.map((rec) => (
                 <Link
                   to={`/product/${rec._id}`}
                   key={rec._id}
-                  className="group bg-slate-900 rounded-xl border border-slate-800 overflow-hidden hover:border-emerald-500/50 transition-all"
+                  className="group bg-slate-900 rounded-xl border border-slate-800 overflow-hidden hover:border-emerald-500/50 transition-all hover:shadow-xl hover:-translate-y-1"
                 >
-                  <div className="h-40 bg-slate-800/50 flex items-center justify-center relative overflow-hidden">
-                    <div className="absolute top-2 right-2 z-10 bg-slate-950/80 px-2 py-1 rounded text-[10px] font-bold text-white border border-slate-700">
-                      {rec.category}
-                    </div>
+                  {/* Rec Image - White BG */}
+                  <div className="h-48 bg-white flex items-center justify-center relative overflow-hidden p-4">
                     {rec.images && rec.images.length > 0 ? (
                       <img
                         src={rec.images[0]}
                         alt={rec.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-500"
                       />
                     ) : (
-                      <span className="text-slate-700 font-bold text-4xl">
-                        IMG
-                      </span>
+                      <FaMicrochip className="text-4xl text-slate-300" />
                     )}
                   </div>
+                  {/* Rec Info */}
                   <div className="p-4">
-                    <h4 className="font-bold text-white truncate group-hover:text-emerald-400 transition-colors">
+                    <div className="text-[10px] text-emerald-400 font-bold uppercase mb-1">
+                      {rec.brand}
+                    </div>
+                    <h4 className="font-bold text-white truncate text-sm mb-2">
                       {rec.title}
                     </h4>
-                    <div className="flex justify-between items-center mt-2">
-                      <p className="text-emerald-400 font-mono font-bold">
-                        ₹{rec.price}
-                      </p>
-                      <span className="text-[10px] text-slate-500 border border-slate-700 px-1 rounded">
-                        {rec.condition}
-                      </span>
+                    <div className="flex justify-between items-center">
+                      <p className="text-white font-bold">₹{rec.price}</p>
+                      {rec.mrp > rec.price && (
+                        <span className="text-[10px] text-red-400 bg-red-900/20 px-1 rounded">
+                          -{Math.round(((rec.mrp - rec.price) / rec.mrp) * 100)}
+                          %
+                        </span>
+                      )}
                     </div>
                   </div>
                 </Link>

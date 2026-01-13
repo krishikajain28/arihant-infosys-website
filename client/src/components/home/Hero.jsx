@@ -7,7 +7,7 @@ const Hero = () => {
       {/* BACKGROUND LAYER */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/images/home.png"
+          src="/images/bg/home.png"
           alt="Hardware Warehouse"
           // ADJUSTMENT 2: Added 'object-center'. Kept 'object-cover' to ensure no empty bars.
           // If you strictly want the FULL image with no cropping, change 'object-cover' to 'object-contain'

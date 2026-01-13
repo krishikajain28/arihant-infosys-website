@@ -10,12 +10,16 @@ import ProductCard from "../../components/ProductCard";
 // LOCAL IMPORTS (Same folder)
 import AdminStats from "./AdminStats";
 import AddProductForm from "./AddProductForm";
+import EditProductForm from "./EditProductForm"; // 🟢 ADDED THIS IMPORT
 
 const Dashboard = () => {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // MODAL STATES
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null); // 🟢 ADDED THIS STATE
 
   useEffect(() => {
     fetchProducts();
@@ -65,31 +69,46 @@ const Dashboard = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
-              <ProductCard key={product._id} product={product} />
+              <ProductCard
+                key={product._id}
+                product={product}
+                isAdmin={true} // <-- ENABLE ADMIN MODE
+                onDelete={(action) => {
+                  // 🟢 LOGIC: CHECK IF IT'S AN EDIT OR DELETE ACTION
+                  if (action === "EDIT") {
+                    setEditingProduct(product); // Open the Edit Modal
+                  } else {
+                    fetchProducts(); // Refresh after delete
+                  }
+                }}
+              />
             ))}
           </div>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredProducts.map((product) => (
-          <ProductCard
-            key={product._id}
-            product={product}
-            isAdmin={true} // <-- ENABLE ADMIN MODE
-            onDelete={fetchProducts} // <-- REFRESH AFTER DELETE
-          />
-        ))}
-      </div>
-
       <Footer />
 
-      {/* MODAL */}
+      {/* 🟢 ADD PRODUCT MODAL */}
       {showAddForm && (
         <div className="fixed inset-0 z-50 backdrop-blur-sm bg-slate-900/80 transition-all flex justify-center items-center p-4">
           <AddProductForm
             onClose={() => setShowAddForm(false)}
             onProductAdded={fetchProducts}
+          />
+        </div>
+      )}
+
+      {/* 🟢 EDIT PRODUCT MODAL */}
+      {editingProduct && (
+        <div className="fixed inset-0 z-50 backdrop-blur-sm bg-slate-900/80 transition-all flex justify-center items-center p-4">
+          <EditProductForm
+            product={editingProduct}
+            onClose={() => setEditingProduct(null)}
+            onProductUpdated={() => {
+              fetchProducts();
+              setEditingProduct(null);
+            }}
           />
         </div>
       )}
