@@ -27,6 +27,37 @@ const ProductDetails = () => {
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const productSchema = product
+    ? {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        name: product.title,
+        image:
+          product.images && product.images.length > 0 ? product.images[0] : "",
+        description: `Buy ${product.title}. ${product.specs?.capacity || ""} ${
+          product.specs?.type || ""
+        } available.`,
+        brand: {
+          "@type": "Brand",
+          name: product.brand,
+        },
+        offers: {
+          "@type": "Offer",
+          priceCurrency: "INR",
+          price: product.price,
+          availability:
+            product.stock > 0
+              ? "https://schema.org/InStock"
+              : "https://schema.org/OutOfStock",
+          url: window.location.href,
+          seller: {
+            "@type": "Organization",
+            name: "Arihant Infosys",
+          },
+        },
+      }
+    : null;
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -92,11 +123,15 @@ const ProductDetails = () => {
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500 selection:text-white">
       <SEO
         title={product.title}
-        description={`Buy ${product.title} at wholesale rates available now at Arihant Infosys.`}
+        description={`Buy ${product.title} at wholesale rates. ${
+          product.specs?.capacity || ""
+        } available at Arihant Infosys.`}
         image={
           product.images && product.images.length > 0 ? product.images[0] : ""
         }
         url={window.location.href}
+        type="product"
+        schema={productSchema}
       />
       <Navbar />
 
