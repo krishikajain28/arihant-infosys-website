@@ -8,13 +8,12 @@ import {
   FaMemory,
   FaHdd,
   FaLaptop,
-  FaServer,
-  FaBan,
-  FaCheckCircle,
   FaBolt,
-  FaShippingFast,
+  FaCheckCircle,
   FaShieldAlt,
+  FaShippingFast,
   FaTag,
+  FaCommentDots,
 } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
@@ -49,7 +48,7 @@ const ProductDetails = () => {
         setLoading(false);
       })
       .catch((err) => {
-        console.error(err);
+        console.error("Error fetching product:", err);
         setLoading(false);
       });
   }, [id]);
@@ -65,8 +64,8 @@ const ProductDetails = () => {
   };
 
   const handleBuy = () => {
-    if (!product || product.stock <= 0) return;
-    const message = `*Hi Arihant Infosys, I am interested in this item:*\n\n*${product.title}*\nPrice: ₹${product.price}\nCondition: ${product.condition}\n\nIs it available?`;
+    if (!product) return;
+    const message = `*Hi Arihant Infosys, I am interested in this item:*\n\n*${product.title}*\nCondition: ${product.condition}\n\nCould you please quote the best wholesale rate?`;
     window.open(
       `https://wa.me/919702730050?text=${encodeURIComponent(message)}`,
       "_blank"
@@ -79,6 +78,7 @@ const ProductDetails = () => {
         <FaMicrochip className="animate-spin text-4xl" />
       </div>
     );
+
   if (!product)
     return (
       <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
@@ -88,20 +88,14 @@ const ProductDetails = () => {
 
   const isOutOfStock = product.stock <= 0;
 
-  // CALCULATE DISCOUNT
-  const discount =
-    product.mrp > product.price
-      ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
-      : 0;
-
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500 selection:text-white">
       <SEO
         title={product.title}
-        description={`Buy ${product.title}. ${product.specs?.capacity || ""} ${
-          product.specs?.type || ""
-        } available now at Arihant Infosys.`}
-        image={product.images[0]}
+        description={`Buy ${product.title} at wholesale rates available now at Arihant Infosys.`}
+        image={
+          product.images && product.images.length > 0 ? product.images[0] : ""
+        }
         url={window.location.href}
       />
       <Navbar />
@@ -117,10 +111,9 @@ const ProductDetails = () => {
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
-          {/* --- LEFT: IMAGE SECTION (WHITE BG FIX) --- */}
+          {/* --- LEFT: IMAGE SECTION --- */}
           <div className="relative">
             <div className="bg-white rounded-3xl p-8 flex items-center justify-center relative overflow-hidden h-[400px] md:h-[500px] shadow-2xl group border-4 border-slate-900">
-              {/* Status Badges */}
               <div className="absolute top-6 left-6 z-10 flex flex-col gap-2">
                 {product.condition && (
                   <span className="bg-slate-900 text-white px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider shadow-lg">
@@ -134,14 +127,6 @@ const ProductDetails = () => {
                 )}
               </div>
 
-              {/* Discount Badge */}
-              {discount > 0 && !isOutOfStock && (
-                <div className="absolute top-6 right-6 z-10 bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold shadow-xl animate-pulse">
-                  {discount}% OFF
-                </div>
-              )}
-
-              {/* Main Image */}
               {product.images && product.images.length > 0 ? (
                 <img
                   src={product.images[0]}
@@ -161,7 +146,6 @@ const ProductDetails = () => {
                 </div>
               )}
 
-              {/* Sold Out Overlay */}
               {isOutOfStock && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[2px]">
                   <span className="bg-red-600 text-white px-8 py-4 rounded-xl text-2xl font-bold uppercase tracking-widest shadow-2xl transform -rotate-12 border-4 border-white">
@@ -171,7 +155,6 @@ const ProductDetails = () => {
               )}
             </div>
 
-            {/* Thumbnail / Extra Info (Optional) */}
             <div className="mt-4 flex gap-4 justify-center text-xs text-slate-500">
               <span className="flex items-center gap-1">
                 <FaCheckCircle className="text-emerald-500" /> Quality Checked
@@ -187,7 +170,6 @@ const ProductDetails = () => {
 
           {/* --- RIGHT: DETAILS SECTION --- */}
           <div className="flex flex-col justify-center">
-            {/* Title Block */}
             <div className="mb-6">
               <h2 className="text-emerald-400 font-bold uppercase tracking-widest text-xs mb-2 flex items-center gap-2">
                 <span className="w-8 h-[2px] bg-emerald-500"></span>
@@ -197,21 +179,16 @@ const ProductDetails = () => {
                 {product.title}
               </h1>
 
-              {/* Pricing Block */}
-              <div className="flex items-end gap-4 border-b border-slate-800 pb-6">
-                <div className="text-5xl font-mono text-white font-bold tracking-tighter">
-                  ₹{product.price.toLocaleString()}
+              {/* 🟢 B2B PRICE BLOCK */}
+              <div className="border-b border-slate-800 pb-6">
+                <div className="text-3xl md:text-4xl font-bold text-white tracking-tight flex items-center gap-3">
+                  <span className="text-emerald-400 flex items-center gap-3">
+                    <FaCommentDots className="text-3xl" /> Message for Best Rate
+                  </span>
                 </div>
-                {product.mrp > product.price && (
-                  <div className="flex flex-col mb-1">
-                    <span className="text-slate-500 text-lg line-through decoration-red-500/50 decoration-2">
-                      ₹{product.mrp.toLocaleString()}
-                    </span>
-                    <span className="text-emerald-400 text-xs font-bold uppercase">
-                      Save ₹{(product.mrp - product.price).toLocaleString()}
-                    </span>
-                  </div>
-                )}
+                <p className="text-slate-400 text-sm mt-2 font-medium">
+                  We offer dynamic wholesale pricing based on quantity.
+                </p>
               </div>
             </div>
 
@@ -221,7 +198,6 @@ const ProductDetails = () => {
                 <FaMicrochip /> Technical Specifications
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4 text-sm">
-                {/* Standard Specs */}
                 <div>
                   <span className="text-slate-500 text-xs uppercase block mb-1">
                     Capacity
@@ -246,8 +222,6 @@ const ProductDetails = () => {
                     {product.specs?.speed || "--"}
                   </span>
                 </div>
-
-                {/* 🟢 NEW SPECS */}
                 <div>
                   <span className="text-slate-500 text-xs uppercase block mb-1">
                     Interface
@@ -264,8 +238,6 @@ const ProductDetails = () => {
                     {product.specs?.formFactor || "--"}
                   </span>
                 </div>
-
-                {/* Health Highlight */}
                 <div className="relative">
                   <span className="text-slate-500 text-xs uppercase block mb-1">
                     Health Status
@@ -298,11 +270,13 @@ const ProductDetails = () => {
               >
                 {isOutOfStock ? (
                   <>
-                    <FaBan /> Item Sold Out
+                    {" "}
+                    <FaBan /> Item Sold Out{" "}
                   </>
                 ) : (
                   <>
-                    <FaWhatsapp size={28} /> Buy on WhatsApp
+                    {" "}
+                    <FaWhatsapp size={28} /> Message for Rate{" "}
                   </>
                 )}
               </button>
@@ -329,7 +303,6 @@ const ProductDetails = () => {
                   key={rec._id}
                   className="group bg-slate-900 rounded-xl border border-slate-800 overflow-hidden hover:border-emerald-500/50 transition-all hover:shadow-xl hover:-translate-y-1"
                 >
-                  {/* Rec Image - White BG */}
                   <div className="h-48 bg-white flex items-center justify-center relative overflow-hidden p-4">
                     {rec.images && rec.images.length > 0 ? (
                       <img
@@ -341,7 +314,6 @@ const ProductDetails = () => {
                       <FaMicrochip className="text-4xl text-slate-300" />
                     )}
                   </div>
-                  {/* Rec Info */}
                   <div className="p-4">
                     <div className="text-[10px] text-emerald-400 font-bold uppercase mb-1">
                       {rec.brand}
@@ -349,14 +321,11 @@ const ProductDetails = () => {
                     <h4 className="font-bold text-white truncate text-sm mb-2">
                       {rec.title}
                     </h4>
+                    {/* 🟢 HIDDEN PRICE IN RECS */}
                     <div className="flex justify-between items-center">
-                      <p className="text-white font-bold">₹{rec.price}</p>
-                      {rec.mrp > rec.price && (
-                        <span className="text-[10px] text-red-400 bg-red-900/20 px-1 rounded">
-                          -{Math.round(((rec.mrp - rec.price) / rec.mrp) * 100)}
-                          %
-                        </span>
-                      )}
+                      <p className="text-slate-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1">
+                        <FaWhatsapp /> Message for Rate
+                      </p>
                     </div>
                   </div>
                 </Link>

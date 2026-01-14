@@ -5,10 +5,16 @@ import {
   FaBan,
   FaImage,
   FaBolt,
+  FaWhatsapp,
+  FaEdit,
 } from "react-icons/fa";
 import axios from "axios";
+import { API_URL } from "../config";
 
 const ProductCard = ({ product, isAdmin, onDelete }) => {
+  // SAFETY CHECK: If product is missing, don't crash
+  if (!product) return null;
+
   // 1. CHECK STOCK
   const isOutOfStock = product.stock <= 0;
 
@@ -23,8 +29,8 @@ const ProductCard = ({ product, isAdmin, onDelete }) => {
     e.preventDefault();
     if (window.confirm("Delete this item permanently?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/products/${product._id}`);
-        onDelete();
+        await axios.delete(`${API_URL}/products/${product._id}`);
+        onDelete("DELETE");
       } catch (err) {
         alert("Error deleting product");
       }
@@ -43,19 +49,16 @@ const ProductCard = ({ product, isAdmin, onDelete }) => {
       {/* ADMIN CONTROLS */}
       {isAdmin && (
         <div className="absolute top-2 right-2 z-30 flex gap-2">
-          {/* 🟢 EDIT BUTTON */}
           <button
             onClick={(e) => {
               e.preventDefault();
-              // We need to pass a signal to parent, but for now let's just use the prop
-              if (onDelete) onDelete("EDIT"); // Hack to signal edit
+              if (onDelete) onDelete("EDIT");
             }}
-            className="bg-slate-700/90 text-emerald-400 p-2 rounded-lg shadow-lg hover:bg-white hover:scale-110 transition-all backdrop-blur-sm"
+            className="bg-blue-600/90 text-white p-2 rounded-lg shadow-lg hover:scale-110 transition-all backdrop-blur-sm"
           >
-            <FaBolt size={12} />
+            <FaEdit size={12} />
           </button>
 
-          {/* DELETE BUTTON */}
           <button
             onClick={handleDelete}
             className="bg-red-600/90 text-white p-2 rounded-lg shadow-lg hover:scale-110 transition-transform backdrop-blur-sm"
@@ -65,29 +68,19 @@ const ProductCard = ({ product, isAdmin, onDelete }) => {
         </div>
       )}
 
-      {/* --- IMAGE AREA (WHITE BACKGROUND FIX) --- */}
-      {/* Changed bg-slate-900 to bg-white so JPEGs blend in */}
+      {/* --- IMAGE AREA --- */}
       <div className="h-48 bg-white flex items-center justify-center relative overflow-hidden p-4 group-hover:bg-slate-50 transition-colors">
-        {/* BADGES */}
         <div className="absolute top-0 left-0 w-full flex justify-between p-3 z-20">
-          {/* Category Badge */}
           <span className="bg-slate-900/90 text-slate-300 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider shadow-sm">
             {product.category}
           </span>
-
-          {/* Discount / Status Badge */}
-          {isOutOfStock ? (
+          {isOutOfStock && (
             <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">
               SOLD OUT
             </span>
-          ) : discount > 0 ? (
-            <span className="bg-emerald-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">
-              {discount}% OFF
-            </span>
-          ) : null}
+          )}
         </div>
 
-        {/* THE IMAGE */}
         {product.images && product.images.length > 0 ? (
           <img
             src={product.images[0]}
@@ -105,17 +98,15 @@ const ProductCard = ({ product, isAdmin, onDelete }) => {
           </div>
         )}
 
-        {/* Fallback for Broken Image */}
         <div className="hidden flex-col items-center text-slate-400 absolute inset-0 justify-center bg-slate-100">
           <FaImage size={32} />
           <span className="text-xs font-bold mt-1">Image Broken</span>
         </div>
       </div>
 
-      {/* --- DETAILS AREA (DARK) --- */}
+      {/* --- DETAILS AREA --- */}
       <div className="p-4 flex-grow flex flex-col justify-between border-t border-slate-800">
         <div>
-          {/* Brand & Capacity */}
           <div className="flex items-center gap-2 text-[10px] text-emerald-400 font-bold mb-1 uppercase tracking-wide">
             {product.brand}
             {product.specs?.capacity && (
@@ -123,12 +114,10 @@ const ProductCard = ({ product, isAdmin, onDelete }) => {
             )}
           </div>
 
-          {/* Title */}
           <h3 className="text-white font-bold text-sm leading-snug mb-2 line-clamp-2 group-hover:text-emerald-400 transition-colors">
             {product.title}
           </h3>
 
-          {/* Quick Specs (Chips) */}
           <div className="flex flex-wrap gap-1 mb-3">
             {product.specs?.health && (
               <span className="text-[10px] bg-slate-800 text-emerald-400 px-1.5 py-0.5 rounded border border-slate-700 flex items-center gap-1">
@@ -143,21 +132,24 @@ const ProductCard = ({ product, isAdmin, onDelete }) => {
           </div>
         </div>
 
-        {/* Price & Action */}
         <div className="flex items-end justify-between mt-2 pt-2 border-t border-slate-800/50">
           <div className="flex flex-col">
-            {product.mrp > product.price && (
-              <span className="text-slate-500 text-[10px] line-through">
-                ₹{product.mrp}
+            {isAdmin ? (
+              <>
+                {product.mrp > product.price && (
+                  <span className="text-slate-500 text-[10px] line-through">
+                    ₹{product.mrp}
+                  </span>
+                )}
+                <span className="text-lg font-bold text-white">
+                  ₹{product.price}
+                </span>
+              </>
+            ) : (
+              <span className="text-emerald-400 font-bold uppercase tracking-wider text-xs flex items-center gap-2">
+                <FaWhatsapp size={14} /> Message for Rate
               </span>
             )}
-            <span
-              className={`text-lg font-bold ${
-                isOutOfStock ? "text-slate-500" : "text-white"
-              }`}
-            >
-              ₹{product.price}
-            </span>
           </div>
 
           {!isAdmin && (
@@ -165,7 +157,7 @@ const ProductCard = ({ product, isAdmin, onDelete }) => {
               className={`p-2 rounded-lg transition-colors ${
                 isOutOfStock
                   ? "bg-slate-800 text-red-500 opacity-50"
-                  : "bg-emerald-600 text-white shadow-lg shadow-emerald-900/20 group-hover:bg-emerald-500"
+                  : "bg-slate-800 text-emerald-400 hover:bg-emerald-500 hover:text-white"
               }`}
             >
               {isOutOfStock ? (
