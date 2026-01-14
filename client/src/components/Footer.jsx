@@ -52,7 +52,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-3">
                 <FaWhatsapp className="text-emerald-500" />
-                <span>+91 97027 30058</span>
+                <span>+91 97027 30050</span>
               </li>
               <li className="flex items-center gap-3">
                 <FaEnvelope className="text-emerald-500" />
